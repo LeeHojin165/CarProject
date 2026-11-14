@@ -13,6 +13,7 @@ sealed interface ScreenRequest {
     data class ParkAsk(val place: Place) : ScreenRequest
     data object Home : ScreenRequest
     data object PickupWait : ScreenRequest
+    data object PickupDepart : ScreenRequest
     data object TripLog : ScreenRequest
     data class Briefing(val place: Place) : ScreenRequest
 }

@@ -15,6 +15,10 @@ import com.example.carproject.data.fake.FakeOffModeRepository
 import com.example.carproject.data.fake.FakePickupRepository
 import com.example.carproject.data.fake.FakeProfileRepository
 import com.example.carproject.data.fake.FakeTripLogRepository
+import com.example.carproject.data.fake.FakeSettingsRepository
+import com.example.carproject.data.fake.FakeRecordRepository
+import com.example.carproject.data.repository.SettingsRepository
+import com.example.carproject.data.repository.RecordRepository
 import com.example.carproject.data.repository.ProfileRepository
 import com.example.carproject.data.repository.TripLogRepository
 import com.example.carproject.data.repository.ChargingRepository
@@ -70,9 +74,10 @@ class AppContainer(context: Context) {
         pleos = PleosNavigationRepository(context),
         fake = FakeNavigationRepository(),
     )
+    val settingsRepository: SettingsRepository = FakeSettingsRepository()
     val drivingAssistant = DrivingAssistant(
         appScope, calendarRepository, messageRepository, speechRepository, voiceRepository,
-        placeRepository, navigationRepository,
+        placeRepository, navigationRepository, settingsRepository,
     )
     val gearRepository: GearRepository = CarGearRepository(context)
     val parkingRepository: ParkingRepository = FakeParkingRepository()
@@ -81,7 +86,8 @@ class AppContainer(context: Context) {
     val pickupRepository: PickupRepository = FakePickupRepository()
     val profileRepository: ProfileRepository = FakeProfileRepository()
     val tripLogRepository: TripLogRepository = FakeTripLogRepository()
+    val recordRepository: RecordRepository = FakeRecordRepository()
     val screenRouter = ScreenRouter(context)
-    val parkingWatcher = ParkingWatcher(appScope, gearRepository, drivingAssistant, placeRepository, screenRouter)
+    val parkingWatcher = ParkingWatcher(appScope, gearRepository, drivingAssistant, placeRepository, screenRouter, settingsRepository)
     val demoControls = DemoControls(gearRepository, fakeVehicle, drivingAssistant, screenRouter, pickupRepository)
 }

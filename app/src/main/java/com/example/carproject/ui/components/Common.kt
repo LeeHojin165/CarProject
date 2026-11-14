@@ -38,6 +38,7 @@ fun AppScreen(
     statusIcon: AppIcon,
     statusText: String,
     modifier: Modifier = Modifier,
+    onStatusClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(
@@ -53,7 +54,7 @@ fun AppScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(APP_NAME, style = ds(30, 700, -0.01))
-            StatusChip(statusIcon, statusText)
+            StatusChip(statusIcon, statusText, onClick = onStatusClick)
         }
         content()
     }
@@ -61,12 +62,13 @@ fun AppScreen(
 
 /** 오른쪽 위 둥근 상태 칩: padding 14/28, gap 14, 28px/600. */
 @Composable
-fun StatusChip(icon: AppIcon, text: String, fontSize: Int = 28, iconSize: Dp = 30.dp) {
+fun StatusChip(icon: AppIcon, text: String, fontSize: Int = 28, iconSize: Dp = 30.dp, onClick: (() -> Unit)? = null) {
     val c = appColors
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(999.dp))
             .background(c.card)
+            .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
             .padding(horizontal = 28.dp, vertical = 14.dp),
         horizontalArrangement = Arrangement.spacedBy(14.dp),
         verticalAlignment = Alignment.CenterVertically,

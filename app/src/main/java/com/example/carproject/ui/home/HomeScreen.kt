@@ -44,6 +44,7 @@ fun HomeScreen(
     onDestinationChosen: (Place) -> Unit,
     onLeaveWork: () -> Unit,
     onTripChosen: (Place) -> Unit,
+    onOpenMyPage: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(viewModel) {
@@ -56,7 +57,10 @@ fun HomeScreen(
     }
     val choose: (Place) -> Unit = viewModel::chooseDestination
     Box(Modifier.fillMaxSize()) {
-        HomeContent(state, viewModel::onCommuteClick, { viewModel.onLeaveWorkClick(); onLeaveWork() }, viewModel::onBusinessTripClick)
+        HomeContent(
+            state, viewModel::onCommuteClick, { viewModel.onLeaveWorkClick(); onLeaveWork() }, viewModel::onBusinessTripClick,
+            onOpenMyPage = onOpenMyPage,
+        )
         when (val d = state.dialog) {
             HomeDialog.None -> Unit
             is HomeDialog.ConfirmWork -> ConfirmWorkDialog(
@@ -80,9 +84,11 @@ fun HomeContent(
     onCommute: () -> Unit,
     onLeaveWork: () -> Unit,
     onBusinessTrip: () -> Unit,
+    onOpenMyPage: () -> Unit = {},
 ) {
     val c = appColors
-    AppScreen(AppIcon.Parking, "주차 중 · 출발 전") {
+    // 오른쪽 위 상태 칩을 누르면 마이페이지(주차 중에만 열림).
+    AppScreen(AppIcon.Parking, "주차 중 · 출발 전", onStatusClick = onOpenMyPage) {
         Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(80.dp)) {
             Column(
                 Modifier.weight(1f).fillMaxHeight(),

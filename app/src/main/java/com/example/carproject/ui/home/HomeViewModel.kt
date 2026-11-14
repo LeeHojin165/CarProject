@@ -12,6 +12,7 @@ import com.example.carproject.data.model.SpeechEvent
 import com.example.carproject.data.model.VehicleStatus
 import com.example.carproject.data.repository.CalendarRepository
 import com.example.carproject.data.repository.PlaceRepository
+import com.example.carproject.data.repository.SettingsRepository
 import com.example.carproject.data.repository.SpeechRepository
 import com.example.carproject.data.repository.VoiceRepository
 import com.example.carproject.data.repository.VehicleRepository
@@ -81,6 +82,7 @@ class HomeViewModel(
     private val voice: VoiceRepository,
     private val driving: DrivingAssistant,
     private val calendar: CalendarRepository,
+    private val settings: SettingsRepository,
 ) : ViewModel() {
     private var speakJob: Job? = null
     private val dialog = MutableStateFlow<HomeDialog>(HomeDialog.None)
@@ -103,7 +105,9 @@ class HomeViewModel(
         driving.beginCommute()
         // CLAUDE.md: 출근 버튼을 누르면 차량 상태를 한 문장으로 읽어준다.
         speakJob?.cancel()
-        speakJob = viewModelScope.launch { voice.speak(vehicleSentence(vehicle.status.value)) }
+        if (settings.proactive.value.vehicleCheck) {
+            speakJob = viewModelScope.launch { voice.speak(vehicleSentence(vehicle.status.value)) }
+        }
         showConfirmWork()
     }
 
@@ -254,7 +258,7 @@ class HomeViewModel(
 
     companion object {
         fun factory(c: AppContainer) = viewModelFactory {
-            initializer { HomeViewModel(c.vehicleRepository, c.placeRepository, c.speechRepository, c.voiceRepository, c.drivingAssistant, c.calendarRepository) }
+            initializer { HomeViewModel(c.vehicleRepository, c.placeRepository, c.speechRepository, c.voiceRepository, c.drivingAssistant, c.calendarRepository, c.settingsRepository) }
         }
 
         private const val CONFIRM_DELAY_MS = 1_200L

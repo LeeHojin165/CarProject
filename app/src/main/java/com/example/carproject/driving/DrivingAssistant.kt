@@ -8,6 +8,7 @@ import com.example.carproject.data.model.Reservation
 import com.example.carproject.data.repository.NavigationRepository
 import com.example.carproject.data.repository.PlaceRepository
 import com.example.carproject.data.repository.RouteResult
+import com.example.carproject.data.repository.SettingsRepository
 import com.example.carproject.data.model.SpeechEvent
 import com.example.carproject.data.repository.CalendarRepository
 import com.example.carproject.data.repository.MessageRepository
@@ -55,6 +56,7 @@ class DrivingAssistant(
     private val voice: VoiceRepository,
     private val places: PlaceRepository,
     private val navigation: NavigationRepository,
+    private val settings: SettingsRepository,
 ) {
     private val _popup = MutableStateFlow<DrivingPopup>(DrivingPopup.None)
     val popup: StateFlow<DrivingPopup> = _popup.asStateFlow()
@@ -117,6 +119,12 @@ class DrivingAssistant(
     var savedFoodKgToday = 0.0
         private set
 
+    /** 픽업을 마친 것으로 한다(16·17을 건너뛸 때). */
+    fun markPickedUp() {
+        pickupStage = PickupStage.PickedUp
+        reservation?.let { savedFoodKgToday += it.store.weightKg }
+    }
+
     /** 기어 P: 예약한 가게 앞에 처음 세운 것이면 true(16을 띄운다). */
     fun arriveAtPickupIfPending(): Boolean {
         if (_mode.value != CommuteMode.Evening || reservation == null || pickupStage != PickupStage.None) return false
@@ -138,8 +146,7 @@ class DrivingAssistant(
 
     /** 17까지 마쳤다. 받은 음식을 기록하고 집으로 남은 안내를 이어간다. */
     suspend fun finishPickup() {
-        pickupStage = PickupStage.PickedUp
-        reservation?.let { savedFoodKgToday += it.store.weightKg }
+        markPickedUp()
         navigation.showNavigation()
     }
 
@@ -182,7 +189,7 @@ class DrivingAssistant(
         destination = place
         driveJob?.cancel()
         driveJob = scope.launch {
-            if (_mode.value == CommuteMode.Morning && tripKind == TripKind.Commute) {
+            if (_mode.value == CommuteMode.Morning && tripKind == TripKind.Commute && settings.proactive.value.lateAlert) {
                 // 출근길: 가짜 교통 정보로 잠시 뒤 지각 여부를 판단한다.
                 delay(LATE_CHECK_DELAY_MS)
                 showLateNotice(FAKE_DELAY_MINUTES)

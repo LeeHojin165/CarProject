@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.carproject.data.model.Gear
 import com.example.carproject.data.repository.GearRepository
 import com.example.carproject.data.repository.PlaceRepository
+import com.example.carproject.data.repository.SettingsRepository
 import com.example.carproject.ui.theme.CommuteMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -17,6 +18,7 @@ class ParkingWatcher(
     private val driving: DrivingAssistant,
     private val places: PlaceRepository,
     private val router: ScreenRouter,
+    private val settings: SettingsRepository,
 ) {
     fun start() {
         scope.launch {
@@ -31,12 +33,19 @@ class ParkingWatcher(
     private fun onParked() {
         // 퇴근길 예약한 가게 앞이면 주차 위치 대신 히터를 켜 둘지 묻는다(16).
         if (driving.arriveAtPickupIfPending()) {
-            Log.i(TAG, "P로 바뀜 → 픽업 가게 앞")
-            router.open(ScreenRequest.PickupWait)
+            val s = settings.proactive.value
+            Log.i(TAG, "P로 바뀜 → 픽업 가게 앞 (히터 묻기 ${s.keepClimate}, 환기 묻기 ${s.ventilate})")
+            when {
+                s.keepClimate -> router.open(ScreenRequest.PickupWait)
+                s.ventilate -> router.open(ScreenRequest.PickupDepart)
+                else -> driving.markPickedUp() // 둘 다 꺼져 있으면 묻지 않고 내비를 그대로 둔다
+            }
             return
         }
         // 출장지에 도착하면 운행기록을 채운다(20).
-        if (driving.tripKind == DrivingAssistant.TripKind.Business && driving.businessTrip != null) {
+        if (driving.tripKind == DrivingAssistant.TripKind.Business && driving.businessTrip != null &&
+            settings.proactive.value.corporateCar
+        ) {
             Log.i(TAG, "P로 바뀜 → 출장지 도착, 운행기록")
             driving.stopDriving()
             router.open(ScreenRequest.TripLog)
