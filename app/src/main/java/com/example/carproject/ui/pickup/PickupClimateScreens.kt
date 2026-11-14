@@ -35,6 +35,8 @@ import com.example.carproject.AppContainer
 import com.example.carproject.data.model.Reservation
 import com.example.carproject.data.repository.VehicleRepository
 import com.example.carproject.data.repository.VoiceRepository
+import com.example.carproject.data.repository.SettingsRepository
+import androidx.compose.runtime.rememberCoroutineScope
 import com.example.carproject.driving.DrivingAssistant
 import com.example.carproject.ui.components.AppButton
 import com.example.carproject.ui.components.AppIcon
@@ -75,7 +77,8 @@ data class PickupWaitUiState(
 class PickupWaitViewModel(
     private val vehicle: VehicleRepository,
     private val voice: VoiceRepository,
-    driving: DrivingAssistant,
+    private val driving: DrivingAssistant,
+    private val settings: SettingsRepository,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(
         vehicle.status.value.let { v ->
@@ -103,6 +106,14 @@ class PickupWaitViewModel(
         }
     }
 
+    /** "다녀왔어요": 환기 묻기가 켜져 있으면 17로, 꺼져 있으면 픽업을 마치고 내비로. true면 17로 간다. */
+    suspend fun onReturned(): Boolean {
+        voice.stop()
+        if (settings.proactive.value.ventilate) return true
+        driving.finishPickup()
+        return false
+    }
+
     fun onLeaveOff() {
         voice.stop()
         _uiState.update { it.copy(stage = WaitStage.LeftOff) }
@@ -113,19 +124,22 @@ class PickupWaitViewModel(
 
     companion object {
         fun factory(c: AppContainer) = viewModelFactory {
-            initializer { PickupWaitViewModel(c.vehicleRepository, c.voiceRepository, c.drivingAssistant) }
+            initializer { PickupWaitViewModel(c.vehicleRepository, c.voiceRepository, c.drivingAssistant, c.settingsRepository) }
         }
     }
 }
 
 @Composable
-fun PickupWaitScreen(viewModel: PickupWaitViewModel, onBack: () -> Unit) {
+fun PickupWaitScreen(viewModel: PickupWaitViewModel, onReturned: (toDepart: Boolean) -> Unit) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
     DisposableEffect(viewModel) {
         viewModel.onEnter()
         onDispose { viewModel.stop() }
     }
-    PickupWaitContent(state, viewModel::onKeepOn, viewModel::onLeaveOff, onBack)
+    PickupWaitContent(state, viewModel::onKeepOn, viewModel::onLeaveOff) {
+        scope.launch { onReturned(viewModel.onReturned()) }
+    }
 }
 
 @Composable

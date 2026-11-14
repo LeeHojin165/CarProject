@@ -24,6 +24,8 @@ import com.example.carproject.data.repository.ChargingRepository
 import com.example.carproject.data.repository.OffModeRepository
 import com.example.carproject.data.repository.VehicleRepository
 import com.example.carproject.data.repository.VoiceRepository
+import com.example.carproject.data.repository.SettingsRepository
+import androidx.compose.runtime.rememberCoroutineScope
 import com.example.carproject.driving.DrivingAssistant
 import com.example.carproject.ui.components.AppButton
 import com.example.carproject.ui.components.ButtonKind
@@ -49,6 +51,7 @@ class ChargeRouteViewModel(
     vehicle: VehicleRepository,
     private val voice: VoiceRepository,
     private val driving: DrivingAssistant,
+    private val settings: SettingsRepository,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(
         vehicle.status.value.let { v ->
@@ -80,13 +83,23 @@ class ChargeRouteViewModel(
         driving.chooseCharger(null)
     }
 
+    /** 다음 장면: 픽업 제안이 꺼져 있으면 바로 집으로 출발한다. true면 출발함. */
+    suspend fun departIfNoPickup(): Boolean {
+        if (settings.proactive.value.pickupOffer) return false
+        driving.departHome()
+        return true
+    }
+
     fun stop() = voice.stop()
     override fun onCleared() = stop()
 
     companion object {
         fun factory(c: AppContainer) = viewModelFactory {
             initializer {
-                ChargeRouteViewModel(c.chargingRepository, c.offModeRepository, c.vehicleRepository, c.voiceRepository, c.drivingAssistant)
+                ChargeRouteViewModel(
+                    c.chargingRepository, c.offModeRepository, c.vehicleRepository, c.voiceRepository,
+                    c.drivingAssistant, c.settingsRepository,
+                )
             }
         }
     }
@@ -95,8 +108,10 @@ class ChargeRouteViewModel(
 private val MarkerPositions = listOf(1036f to 752f, 1290f to 470f, 1560f to 222f)
 
 @Composable
-fun ChargeRouteScreen(viewModel: ChargeRouteViewModel, onNext: () -> Unit) {
+fun ChargeRouteScreen(viewModel: ChargeRouteViewModel, onNext: (departed: Boolean) -> Unit) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
+    val next: () -> Unit = { scope.launch { onNext(viewModel.departIfNoPickup()) } }
     DisposableEffect(viewModel) {
         viewModel.onEnter()
         onDispose { viewModel.stop() }
@@ -104,8 +119,8 @@ fun ChargeRouteScreen(viewModel: ChargeRouteViewModel, onNext: () -> Unit) {
     ChargeRouteContent(
         state,
         onSelect = viewModel::onSelect,
-        onAdd = { viewModel.onAddWaypoint(); onNext() },
-        onHome = { viewModel.onChargeAtHome(); onNext() },
+        onAdd = { viewModel.onAddWaypoint(); next() },
+        onHome = { viewModel.onChargeAtHome(); next() },
     )
 }
 

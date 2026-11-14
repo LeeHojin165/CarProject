@@ -11,6 +11,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.navArgument
 import com.example.carproject.ui.leave.ChargeRouteScreen
+import com.example.carproject.ui.mypage.MyPageScreen
+import com.example.carproject.ui.mypage.MyPageViewModel
 import com.example.carproject.ui.trip.BusinessTripScreen
 import com.example.carproject.ui.trip.BusinessTripViewModel
 import com.example.carproject.ui.trip.TripLogScreen
@@ -59,6 +61,7 @@ object Routes {
     const val PARK_SAVED = "park_saved"
     const val ARRIVAL = "arrival"
     const val OFF_MODE = "off_mode"
+    const val MY_PAGE = "my_page"
     const val PICKUP_WAIT = "pickup_wait"
     const val PICKUP_DEPART = "pickup_depart"
     const val CHARGE_ROUTE = "charge_route"
@@ -77,6 +80,11 @@ fun AppNavHost(container: AppContainer) {
     val nav = rememberNavController()
     // 출근길(라이트)·퇴근길(다크). 주차·도착 화면이 따른다.
     val tripMode by container.drivingAssistant.mode.collectAsStateWithLifecycle()
+    // 24 "내리기 전 확인"이 꺼져 있으면 주차 뒤 바로 처음 화면으로.
+    val afterParking: () -> Unit = {
+        if (container.settingsRepository.proactive.value.arrivalCheck) nav.navigate(Routes.ARRIVAL)
+        else nav.navigate(Routes.HOME) { popUpTo(Routes.HOME) }
+    }
     // 앱 밖에서 생긴 일(기어 P 등)로 화면을 띄워 달라는 요청.
     LaunchedEffect(nav) {
         container.screenRouter.screenRequests.collect { request ->
@@ -84,6 +92,7 @@ fun AppNavHost(container: AppContainer) {
                 is ScreenRequest.ParkAsk -> nav.navigate(Routes.parkAsk(request.place)) { launchSingleTop = true }
                 is ScreenRequest.Briefing -> nav.navigate(Routes.briefing(request.place))
                 ScreenRequest.PickupWait -> nav.navigate(Routes.PICKUP_WAIT) { launchSingleTop = true }
+                ScreenRequest.PickupDepart -> nav.navigate(Routes.PICKUP_DEPART) { launchSingleTop = true }
                 ScreenRequest.TripLog -> nav.navigate(Routes.TRIP_LOG) { launchSingleTop = true }
                 ScreenRequest.Home -> nav.navigate(Routes.HOME) {
                     popUpTo(nav.graph.id) { inclusive = true }
@@ -110,6 +119,7 @@ fun AppNavHost(container: AppContainer) {
                     onDestinationChosen = { place -> nav.navigate(Routes.briefing(place)) },
                     onLeaveWork = { nav.navigate(Routes.OFF_MODE) },
                     onTripChosen = { place -> nav.navigate(Routes.trip(place)) },
+                    onOpenMyPage = { nav.navigate(Routes.MY_PAGE) },
                 )
             }
         }
@@ -136,7 +146,7 @@ fun AppNavHost(container: AppContainer) {
                 ParkAskScreen(
                     viewModel = viewModel(factory = ParkAskViewModel.factory(container)),
                     onSaved = { nav.navigate(Routes.PARK_SAVED) },
-                    onSkip = { nav.navigate(Routes.ARRIVAL) },
+                    onSkip = afterParking,
                 )
             }
         }
@@ -144,7 +154,7 @@ fun AppNavHost(container: AppContainer) {
             Screen(tripMode) {
                 ParkSavedScreen(
                     viewModel = viewModel(factory = ParkSavedViewModel.factory(container)),
-                    onDone = { nav.navigate(Routes.ARRIVAL) },
+                    onDone = afterParking,
                     onRetry = { nav.popBackStack() },
                 )
             }
@@ -154,7 +164,11 @@ fun AppNavHost(container: AppContainer) {
                 OffModeScreen(
                     viewModel = viewModel(factory = OffModeViewModel.factory(container)),
                     onNext = { next ->
-                        nav.navigate(if (next == LeaveNext.Charge) Routes.CHARGE_ROUTE else Routes.PICKUP_OFFER)
+                        when (next) {
+                            LeaveNext.Charge -> nav.navigate(Routes.CHARGE_ROUTE)
+                            LeaveNext.Pickup -> nav.navigate(Routes.PICKUP_OFFER)
+                            LeaveNext.Departed -> nav.navigate(Routes.HOME) { popUpTo(Routes.HOME) }
+                        }
                     },
                 )
             }
@@ -163,7 +177,9 @@ fun AppNavHost(container: AppContainer) {
             Screen(tripMode) {
                 ChargeRouteScreen(
                     viewModel = viewModel(factory = ChargeRouteViewModel.factory(container)),
-                    onNext = { nav.navigate(Routes.PICKUP_OFFER) },
+                    onNext = { departed ->
+                        if (departed) nav.navigate(Routes.HOME) { popUpTo(Routes.HOME) } else nav.navigate(Routes.PICKUP_OFFER)
+                    },
                 )
             }
         }
@@ -193,7 +209,9 @@ fun AppNavHost(container: AppContainer) {
             Screen(tripMode) {
                 PickupWaitScreen(
                     viewModel = viewModel(factory = PickupWaitViewModel.factory(container)),
-                    onBack = { nav.navigate(Routes.PICKUP_DEPART) },
+                    onReturned = { toDepart ->
+                        if (toDepart) nav.navigate(Routes.PICKUP_DEPART) else nav.navigate(Routes.HOME) { popUpTo(Routes.HOME) }
+                    },
                 )
             }
         }
@@ -219,7 +237,16 @@ fun AppNavHost(container: AppContainer) {
             Screen(CommuteMode.Morning) {
                 TripLogScreen(
                     viewModel = viewModel(factory = TripLogViewModel.factory(container)),
-                    onSaved = { nav.navigate(Routes.ARRIVAL) },
+                    onSaved = afterParking,
+                )
+            }
+        }
+        composable(Routes.MY_PAGE) {
+            Screen(CommuteMode.Morning) {
+                MyPageScreen(
+                    viewModel = viewModel(factory = MyPageViewModel.factory(container)),
+                    onClose = { nav.popBackStack() },
+                    onDisconnected = { nav.navigate(Routes.LOGIN) { popUpTo(nav.graph.id) { inclusive = true } } },
                 )
             }
         }

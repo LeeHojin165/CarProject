@@ -32,6 +32,8 @@ import com.example.carproject.data.model.TomorrowPreview
 import com.example.carproject.data.repository.OffModeRepository
 import com.example.carproject.data.repository.VehicleRepository
 import com.example.carproject.data.repository.VoiceRepository
+import com.example.carproject.data.repository.SettingsRepository
+import com.example.carproject.driving.DrivingAssistant
 import com.example.carproject.ui.components.AppButton
 import com.example.carproject.ui.components.AppIcon
 import com.example.carproject.ui.components.AppScreen
@@ -44,13 +46,15 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 /** 11 다음 장면. 내일 출근에 배터리가 빠듯하면 충전 제안부터. */
-enum class LeaveNext { Charge, Pickup }
+enum class LeaveNext { Charge, Pickup, Departed }
 
 /** design/11_OffMode.html: 퇴근 모드(Slack 상태·방해 금지)로 바꿀지 묻는다. */
 class OffModeViewModel(
     private val offMode: OffModeRepository,
     private val vehicle: VehicleRepository,
     private val voice: VoiceRepository,
+    private val driving: DrivingAssistant,
+    private val settings: SettingsRepository,
 ) : ViewModel() {
     val changes: List<OffModeChange> = offMode.changes()
     val tomorrow: TomorrowPreview = offMode.tomorrow()
@@ -71,13 +75,24 @@ class OffModeViewModel(
         voice.stop()
         viewModelScope.launch {
             offMode.apply()
-            nextChannel.send(decideNext())
+            goNext()
         }
     }
 
     fun onSkip() {
         voice.stop()
-        nextChannel.trySend(decideNext())
+        viewModelScope.launch { goNext() }
+    }
+
+    /** 충전 → 픽업 제안 순. 픽업 제안이 꺼져 있으면 바로 집으로 출발한다. */
+    private suspend fun goNext() {
+        val next = decideNext()
+        if (next == LeaveNext.Pickup && !settings.proactive.value.pickupOffer) {
+            driving.departHome()
+            nextChannel.send(LeaveNext.Departed)
+        } else {
+            nextChannel.send(next)
+        }
     }
 
     fun stop() = voice.stop()
@@ -94,7 +109,9 @@ class OffModeViewModel(
         const val CHARGE_MARGIN_KM = 20
 
         fun factory(c: AppContainer) = viewModelFactory {
-            initializer { OffModeViewModel(c.offModeRepository, c.vehicleRepository, c.voiceRepository) }
+            initializer {
+                OffModeViewModel(c.offModeRepository, c.vehicleRepository, c.voiceRepository, c.drivingAssistant, c.settingsRepository)
+            }
         }
     }
 }

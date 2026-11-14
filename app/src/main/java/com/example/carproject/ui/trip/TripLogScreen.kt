@@ -100,6 +100,8 @@ class TripLogViewModel(
             TripLogUiState(
                 entry = TripLogEntry(
                     date = LocalDate.now(),
+                    route = "회사 → ${trip?.place?.name ?: "출장지"}",
+                    commute = false,
                     user = "${p.department} · ${p.name}",
                     startOdometerKm = start,
                     endOdometerKm = end,
