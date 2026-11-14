@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>주행 중 픽업 가게 접근 알림</title>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Asta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#00AAD2}a:hover{color:#AACAE6}
+button:focus-visible{outline:4px solid #00AAD2;outline-offset:4px}
+::selection{background:#002C5F;color:#FFFFFF}
+</style>
+
+</head>
+<body>
+
+
+<div style="width: 1920px; height: 1080px; position: relative; overflow: hidden; background: #0D131C; color: #F6F3F2; font-family: 'Asta Sans', 'Noto Sans KR', system-ui, sans-serif">
+<svg aria-hidden="true" width="1920" height="1080" viewBox="0 0 1920 1080" style="position: absolute; inset: 0">
+<rect width="1920" height="1080" fill="#0D131C"></rect>
+<path d="M0 820 L1920 700" stroke="#1F2938" stroke-width="54" fill="none"></path>
+<path d="M600 1080 L820 0" stroke="#1F2938" stroke-width="40" fill="none"></path>
+<path d="M1380 1080 L1270 0" stroke="#1F2938" stroke-width="36" fill="none"></path>
+<path d="M0 340 L1920 420" stroke="#1F2938" stroke-width="28" fill="none"></path>
+<rect x="940" y="480" width="240" height="150" rx="16" fill="#172130"></rect>
+<rect x="180" y="470" width="300" height="170" rx="16" fill="#172130"></rect>
+<rect x="1500" y="490" width="300" height="140" rx="16" fill="#16222E"></rect>
+<path d="M700 1080 L760 860 L1150 800" stroke="#00AAD2" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+<path d="M1150 800 L1330 770 L1310 420" stroke="#00AAD2" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.5"></path>
+<circle cx="1150" cy="800" r="26" fill="#FFFFFF" stroke="#002C5F" stroke-width="10"></circle>
+<circle cx="732" cy="960" r="30" fill="#F6F3F2"></circle>
+<path d="M732 934 L752 978 L732 968 L712 978 Z" fill="#002C5F"></path>
+</svg>
+<div style="position: absolute; right: 64px; bottom: 64px; padding: 20px 28px; border-radius: 24px; background: #0A0F17; box-shadow: 0 8px 24px rgba(0,0,0,0.4); display: flex; align-items: center; gap: 20px">
+<svg aria-hidden="true" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#F6F3F2" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20V11a3 3 0 0 1 3-3h8"></path><path d="M15 4.500 18.500 8 15 11.500"></path></svg>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<div style="font-size: 40px; font-weight: 800; font-variant-numeric: tabular-nums">300m</div>
+<div style="font-size: 26px; color: #A7B0BD">[내비게이션 앱] 경유지 안내 중</div>
+</div>
+</div>
+<div style="position: absolute; top: 40px; left: 50%; transform: translateX(-50%); width: 1160px; box-sizing: border-box; padding: 36px 44px; border-radius: 40px; background: #0A0F17; box-shadow: 0 16px 48px rgba(0,0,0,0.55); display: flex; flex-direction: column; gap: 24px">
+<div style="display: flex; align-items: center; gap: 14px; font-size: 26px; font-weight: 600; color: #A7B0BD">
+<div style="width: 36px; height: 36px; border-radius: 10px; background: #AACAE6"></div>
+<span>[앱 이름]</span>
+</div>
+<h1 style="margin: 0; font-size: 56px; line-height: 1.25; font-weight: 800; letter-spacing: -0.02em">300m 앞 오른쪽, 예약한 빵집이에요.</h1>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+<div style="padding: 22px 28px; border-radius: 28px; background: #1C2636; display: flex; flex-direction: column; gap: 4px">
+<div style="font-size: 26px; color: #A7B0BD">픽업 번호</div>
+<div style="font-size: 72px; line-height: 1.1; font-weight: 800; letter-spacing: 0.04em; font-variant-numeric: tabular-nums">1234</div>
+<div style="font-size: 24px; color: #A7B0BD; font-variant-numeric: tabular-nums">결제 완료 · 20:00까지</div>
+</div>
+<div style="padding: 22px 28px; border-radius: 28px; background: #1C2636; display: flex; flex-direction: column; gap: 4px">
+<div style="font-size: 26px; color: #A7B0BD">주차</div>
+<div style="display: flex; align-items: center; gap: 14px; font-size: 44px; line-height: 1.3; font-weight: 800; color: #00AAD2">
+<svg aria-hidden="true" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"></rect><path d="M10 16V8h3a2.500 2.500 0 0 1 0 5h-3"></path></svg>
+<span>매장 앞 가능</span>
+</div>
+<div style="font-size: 24px; color: #A7B0BD">가게가 알려준 정보예요</div>
+</div>
+</div>
+<div style="display: flex; align-items: center; gap: 14px; font-size: 26px; color: #A7B0BD">
+<svg aria-hidden="true" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.500v5h3.500L12 18.500v-13L7.500 9.500H4z"></path><path d="M16 9a4.500 4.500 0 0 1 0 6"></path></svg>
+<span>픽업 번호는 폰으로도 보내 뒀어요. 같은 내용을 음성으로도 알려드려요.</span>
+</div>
+</div>
+</div>
+
+
+</body>
+</html>

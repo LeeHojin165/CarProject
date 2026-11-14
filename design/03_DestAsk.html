@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>목적지 묻기 팝업</title>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Asta+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+body{margin:0}
+a{color:#002C5F}a:hover{color:#001E42}
+button:focus-visible{outline:4px solid #002C5F;outline-offset:4px}
+::selection{background:#002C5F;color:#FFFFFF}
+</style>
+
+</head>
+<body>
+
+
+<div style="position: relative; width: 1920px; height: 1080px; box-sizing: border-box; padding: 64px 96px 80px; display: flex; flex-direction: column; gap: 48px; background: #F6F3F2; color: #1A1A1A; font-family: 'Asta Sans', 'Noto Sans KR', system-ui, sans-serif">
+<div style="display: flex; justify-content: space-between; align-items: center">
+<div style="font-size: 30px; font-weight: 700; letter-spacing: -0.01em">[앱 이름]</div>
+<div style="display: flex; align-items: center; gap: 14px; padding: 14px 28px; border-radius: 999px; background: #FFFFFF; color: #5C5955; font-size: 28px; font-weight: 600">
+<svg aria-hidden="true" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"></rect><path d="M10 16V8h3a2.5 2.5 0 0 1 0 5h-3"></path></svg>
+<span>주차 중 · 출발 전</span>
+</div>
+</div>
+<div style="flex-grow: 1; display: flex; gap: 80px; align-items: stretch">
+<div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; gap: 40px">
+<h1 style="margin: 0; font-size: 92px; line-height: 1.22; font-weight: 800; letter-spacing: -0.03em">좋은 아침이에요.<br>출근하시나요?</h1>
+<p style="margin: 0; font-size: 34px; line-height: 1.5; color: #5C5955">화요일 이 시간에는 보통 회사로 출발하셨어요.</p>
+<div style="display: flex; flex-direction: column; gap: 24px; margin-top: 16px">
+<button type="button" style="height: 144px; border: 0; border-radius: 36px; background: #002C5F; color: #FFFFFF; font-family: inherit; font-size: 46px; font-weight: 700; letter-spacing: -0.01em; cursor: pointer">네, 출근해요</button>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px">
+<button type="button" style="height: 120px; border: 0; border-radius: 32px; background: #E2DFDB; color: #1A1A1A; font-family: inherit; font-size: 38px; font-weight: 600; cursor: pointer">퇴근이에요</button>
+<button type="button" style="height: 120px; border: 0; border-radius: 32px; background: #E2DFDB; color: #1A1A1A; font-family: inherit; font-size: 38px; font-weight: 600; cursor: pointer">출장 가요</button>
+</div>
+</div>
+</div>
+<div style="width: 660px; flex-shrink: 0; box-sizing: border-box; padding: 44px 48px; border-radius: 44px; background: #FFFFFF; display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0 0 12px; font-size: 36px; font-weight: 700; letter-spacing: -0.01em">출발 전에 살펴봤어요</h2>
+<div style="display: flex; align-items: center; gap: 24px; padding: 28px 0">
+<svg aria-hidden="true" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#5C5955" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="16" height="9" rx="2.5"></rect><path d="M22 11v3"></path><path d="M7 11.5v2M10.5 11.5v2"></path></svg>
+<div style="flex-grow: 1; font-size: 32px; color: #5C5955">배터리</div>
+<div style="font-size: 34px; font-weight: 700">62% · 280km</div>
+</div>
+<div style="display: flex; align-items: center; gap: 24px; padding: 28px 0; border-top: 1px solid #E2DFDB">
+<svg aria-hidden="true" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#5C5955" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3.5"></circle></svg>
+<div style="flex-grow: 1; font-size: 32px; color: #5C5955">타이어 공기압</div>
+<div style="font-size: 34px; font-weight: 700">네 바퀴 정상</div>
+</div>
+<div style="display: flex; align-items: center; gap: 24px; padding: 28px 0; border-top: 1px solid #E2DFDB">
+<svg aria-hidden="true" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#5C5955" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2.5 20h19L12 3z"></path><path d="M12 10v4.5M12 17.2v.3"></path></svg>
+<div style="flex-grow: 1; font-size: 32px; color: #5C5955">경고등</div>
+<div style="font-size: 34px; font-weight: 700">없음</div>
+</div>
+<div style="display: flex; align-items: center; gap: 24px; padding: 28px 0; border-top: 1px solid #E2DFDB">
+<svg aria-hidden="true" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#A36B4F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5c3 4 5.5 7 5.5 10.5a5.5 5.5 0 0 1-11 0C6.500 10.500 9 7.500 12 3.500z"></path></svg>
+<div style="flex-grow: 1; font-size: 32px; color: #5C5955">워셔액</div>
+<div style="font-size: 34px; font-weight: 700; color: #A36B4F">부족 · 보충 필요</div>
+</div>
+<p style="margin: auto 0 0; font-size: 28px; line-height: 1.5; color: #5C5955">가는 길 주유소에서 넣을 수 있게, 출발하면 다시 알려드릴게요.</p>
+</div>
+</div>
+<div style="position: absolute; inset: 0; background: rgba(26,26,26,.48); display: flex; align-items: center; justify-content: center">
+<div role="dialog" aria-modal="true" style="width: 1080px; box-sizing: border-box; padding: 64px 72px; border-radius: 52px; background: #FFFFFF; display: flex; flex-direction: column; gap: 36px; box-shadow: 0 24px 64px rgba(0,0,0,.22); word-break: keep-all">
+<div style="font-size: 30px; font-weight: 600; color: #5C5955">회사가 아니군요</div>
+<h2 style="margin: -20px 0 0; font-size: 72px; line-height: 1.2; font-weight: 800; letter-spacing: -0.03em">어디로 갈까요?</h2>
+<div style="display: flex; align-items: center; gap: 32px; padding: 32px 40px; border-radius: 32px; border: 3px solid #002C5F">
+<div style="display: flex; align-items: center; gap: 8px; height: 72px"><span style="width: 10px; height: 24px; border-radius: 5px; background: #002C5F"></span><span style="width: 10px; height: 48px; border-radius: 5px; background: #002C5F"></span><span style="width: 10px; height: 72px; border-radius: 5px; background: #002C5F"></span><span style="width: 10px; height: 40px; border-radius: 5px; background: #002C5F"></span><span style="width: 10px; height: 60px; border-radius: 5px; background: #002C5F"></span><span style="width: 10px; height: 28px; border-radius: 5px; background: #002C5F"></span><span style="width: 10px; height: 52px; border-radius: 5px; background: #002C5F"></span><span style="width: 10px; height: 36px; border-radius: 5px; background: #002C5F"></span></div>
+<div style="flex-grow: 1"><div style="font-size: 38px; font-weight: 700">말씀해 주세요</div><div style="font-size: 26px; color: #5C5955; margin-top: 4px">예: "판교 [거래처] 사옥으로 가줘" · 글레오가 듣고 있어요</div></div>
+</div>
+<div style="font-size: 28px; font-weight: 700; color: #5C5955; margin-bottom: -16px">최근에 간 곳</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px">
+<button type="button" style="height: 120px; border: 0; border-radius: 32px; background: #F6F3F2; color: #1A1A1A; font-family: inherit; text-align: left; padding: 0 36px; cursor: pointer"><div style="font-size: 34px; font-weight: 700">[거래처 이름]</div><div style="font-size: 24px; color: #5C5955; margin-top: 4px">지난주 목요일</div></button>
+<button type="button" style="height: 120px; border: 0; border-radius: 32px; background: #F6F3F2; color: #1A1A1A; font-family: inherit; text-align: left; padding: 0 36px; cursor: pointer"><div style="font-size: 34px; font-weight: 700">[지점 이름]</div><div style="font-size: 24px; color: #5C5955; margin-top: 4px">11월 3일</div></button>
+<button type="button" style="height: 120px; border: 0; border-radius: 32px; background: #F6F3F2; color: #1A1A1A; font-family: inherit; text-align: left; padding: 0 36px; cursor: pointer"><div style="font-size: 34px; font-weight: 700">[카페 이름]</div><div style="font-size: 24px; color: #5C5955; margin-top: 4px">10월 28일</div></button>
+</div>
+<div style="display: flex; justify-content: space-between; align-items: center">
+<p style="margin: 0; font-size: 28px; color: #5C5955">고르면 그곳으로 내비게이션을 바로 열어요.</p>
+<a href="02_DestConfirm.html" style="height: 88px; padding: 0 40px; border-radius: 28px; background: #E2DFDB; color: #1A1A1A; font-size: 32px; font-weight: 600; text-decoration: none; display: flex; align-items: center">회사로 갈게요</a>
+</div>
+</div>
+</div>
+</div>
+
+
+</body>
+</html>

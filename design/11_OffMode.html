@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>퇴근 모드 전환</title>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Asta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#00AAD2}a:hover{color:#AACAE6}
+button:focus-visible{outline:4px solid #00AAD2;outline-offset:4px}
+::selection{background:#002C5F;color:#FFFFFF}
+</style>
+
+</head>
+<body>
+
+
+<div style="width: 1920px; height: 1080px; box-sizing: border-box; padding: 64px 96px 80px; display: flex; flex-direction: column; gap: 48px; background: #0A0F17; color: #F6F3F2; font-family: 'Asta Sans', 'Noto Sans KR', system-ui, sans-serif; word-break: keep-all">
+<div style="display: flex; justify-content: space-between; align-items: center">
+<div style="font-size: 30px; font-weight: 700; letter-spacing: -0.01em">[앱 이름]</div>
+<div style="display: flex; align-items: center; gap: 14px; padding: 14px 28px; border-radius: 999px; background: #121A26; color: #A7B0BD; font-size: 28px; font-weight: 600">
+<svg aria-hidden="true" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"></rect><path d="M10 16V8h3a2.500 2.500 0 0 1 0 5h-3"></path></svg>
+<span>주차 중 · 퇴근 준비</span>
+</div>
+</div>
+<div style="flex-grow: 1; min-height: 0; display: flex; gap: 72px; align-items: stretch">
+<div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; gap: 40px">
+<h1 style="margin: 0; font-size: 88px; line-height: 1.22; font-weight: 800; letter-spacing: -0.03em">오늘도 수고했어요.<br><span style="color: #AACAE6">퇴근 모드</span>로 바꿀까요?</h1>
+<p style="margin: 0; font-size: 34px; line-height: 1.5; color: #A7B0BD">Slack 상태와 알림만 바꿔요. 내일 오전 9시가 되면 원래대로 돌아와요.</p>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-top: 8px">
+<button type="button" style="height: 144px; border: 0; border-radius: 36px; background: #AACAE6; color: #002C5F; font-family: inherit; font-size: 46px; font-weight: 700; cursor: pointer">바꿀게요</button>
+<button type="button" style="height: 144px; border: 0; border-radius: 36px; background: #1C2636; color: #F6F3F2; font-family: inherit; font-size: 40px; font-weight: 600; cursor: pointer">오늘은 그대로</button>
+</div>
+</div>
+<div style="width: 720px; flex-shrink: 0; box-sizing: border-box; padding: 40px 48px; border-radius: 44px; background: #121A26; display: flex; flex-direction: column">
+<h2 style="margin: 0 0 8px; font-size: 34px; font-weight: 700">바뀌는 것</h2>
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 20px 0; "><div><div style="font-size: 30px; font-weight: 700">Slack 상태</div><div style="font-size: 24px; color: #A7B0BD; margin-top: 4px">팀원에게 보이는 상태 메시지</div></div><div style="font-size: 30px; font-weight: 700; color: #00AAD2; white-space: nowrap; font-variant-numeric: tabular-nums">퇴근했어요</div></div>
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 20px 0; border-top: 1px solid #2A3546;"><div><div style="font-size: 30px; font-weight: 700">Slack 알림</div><div style="font-size: 24px; color: #A7B0BD; margin-top: 4px">방해 금지로 설정해요</div></div><div style="font-size: 30px; font-weight: 700; color: #00AAD2; white-space: nowrap; font-variant-numeric: tabular-nums">내일 09:00까지 끔</div></div>
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 20px 0; border-top: 1px solid #2A3546;"><div><div style="font-size: 30px; font-weight: 700">나를 언급한 메시지</div><div style="font-size: 24px; color: #A7B0BD; margin-top: 4px">집에 도착하면 몇 개 왔는지만 알려줘요</div></div><div style="font-size: 30px; font-weight: 700; color: #00AAD2; white-space: nowrap; font-variant-numeric: tabular-nums">도착 후 한 번</div></div>
+<div style="margin-top: auto; padding: 26px 32px; border-radius: 28px; background: #1C2636; display: flex; flex-direction: column; gap: 10px">
+<div style="font-size: 26px; color: #A7B0BD">내일 미리 보기</div>
+<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 16px"><span style="font-size: 32px; font-weight: 700">첫 일정 · 주간 회의</span><span style="font-size: 36px; font-weight: 800; font-variant-numeric: tabular-nums">10:00</span></div>
+<div style="font-size: 26px; color: #A7B0BD">바꾸면 오늘 남은 할 일 2개도 내일 목록으로 옮겨요.</div>
+</div>
+</div>
+</div>
+</div>
+
+
+</body>
+</html>

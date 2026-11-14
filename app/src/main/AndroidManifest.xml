@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Pleos SpeechToText (CAAS) 사용 권한, normal 등급 -->
+    <uses-permission android:name="pleos.car.permission.STT_SERVICE" />
+    <!-- Pleos TextToSpeech (CAAS) 사용 권한, normal 등급 -->
+    <uses-permission android:name="pleos.car.permission.TTS_SERVICE" />
+
+    <!-- 기어(GEAR_SELECTION) 읽기, normal 등급 -->
+    <uses-permission android:name="android.car.permission.CAR_POWERTRAIN" />
+
+    <!-- 주행 중 내비 위에 작은 팝업을 띄운다 -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <!-- Pleos NaviHelper 권한, 모두 normal 등급 -->
+    <uses-permission android:name="pleos.car.permission.NAVI_ROUTE" />
+    <uses-permission android:name="pleos.car.permission.NAVI_ROUTE_SEARCH" />
+    <uses-permission android:name="pleos.car.permission.NAVI_NOTIFY" />
+    <!-- 좌표 없는 목적지(음성으로만 들은 곳)는 내비 검색 화면을 연다(requestNavigationScreen) -->
+    <uses-permission android:name="pleos.car.permission.NAVI_CUSTOM_MAP" />
+
+    <application
+        android:name=".CarApplication"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.CarProject">
+        <uses-library android:name="android.car" android:required="false" />
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.CarProject"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <!-- 시연·테스트용 명령. 디버그 빌드에서만 동작한다. -->
+        <receiver
+            android:name=".debug.DemoCommandReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.example.carproject.DEMO" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>

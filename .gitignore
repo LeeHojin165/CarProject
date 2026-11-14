@@ -1,0 +1,17 @@
+# Gradle / 빌드 결과
+.gradle
+.kotlin
+/build
+/captures
+.externalNativeBuild
+.cxx
+
+# 내 컴퓨터 전용 설정 (SDK 경로 등)
+local.properties
+
+# Android Studio
+*.iml
+/.idea
+
+# macOS
+.DS_Store
