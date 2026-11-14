@@ -5,10 +5,12 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.carproject.AppContainer
+import com.example.carproject.data.model.CalendarEvent
 import com.example.carproject.data.model.Place
 import com.example.carproject.data.model.RecentPlace
 import com.example.carproject.data.model.SpeechEvent
 import com.example.carproject.data.model.VehicleStatus
+import com.example.carproject.data.repository.CalendarRepository
 import com.example.carproject.data.repository.PlaceRepository
 import com.example.carproject.data.repository.SpeechRepository
 import com.example.carproject.data.repository.VoiceRepository
@@ -16,7 +18,6 @@ import com.example.carproject.data.repository.VehicleRepository
 import com.example.carproject.ui.components.AppIcon
 import com.example.carproject.ui.components.VoiceInput
 import com.example.carproject.driving.DrivingAssistant
-import com.example.carproject.ui.theme.CommuteMode
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -43,6 +44,13 @@ sealed interface HomeDialog {
     /** design/02_DestConfirm.html: 회사가 맞는지 묻기 */
     data class ConfirmWork(val workplace: Place, val arrivalText: String) : HomeDialog
 
+    /** design/18_TripDest.html: 출장지 묻기. 오늘 일정의 회사 밖 미팅을 먼저 제안한다. */
+    data class AskTrip(
+        val suggestion: TripSuggestion?,
+        val recentPlaces: List<RecentPlace>,
+        val voice: VoiceInput = VoiceInput(),
+    ) : HomeDialog
+
     /** design/03_DestAsk.html: 다른 곳이면 어디로 갈지 묻기 */
     data class AskDestination(
         val recentPlaces: List<RecentPlace>,
@@ -50,6 +58,14 @@ sealed interface HomeDialog {
     ) : HomeDialog
 }
 
+/** 18에서 제안하는 오늘 일정의 출장지. */
+data class TripSuggestion(val event: CalendarEvent, val place: Place, val arrivalText: String)
+
+/** 첫 화면에서 정해진 다음 장면. */
+sealed interface HomeNext {
+    data class Commute(val place: Place) : HomeNext
+    data class Business(val place: Place) : HomeNext
+}
 
 data class HomeUiState(
     val hint: String = "",
@@ -64,15 +80,16 @@ class HomeViewModel(
     private val speech: SpeechRepository,
     private val voice: VoiceRepository,
     private val driving: DrivingAssistant,
+    private val calendar: CalendarRepository,
 ) : ViewModel() {
     private var speakJob: Job? = null
     private val dialog = MutableStateFlow<HomeDialog>(HomeDialog.None)
     private var listenJob: Job? = null
 
-    private val destinationChannel = Channel<Place>(Channel.BUFFERED)
+    private val destinationChannel = Channel<HomeNext>(Channel.BUFFERED)
 
     /** 목적지가 정해졌을 때 한 번 흘러나온다. 화면이 받아서 다음 단계로 넘어간다. */
-    val destinationChosen: Flow<Place> = destinationChannel.receiveAsFlow()
+    val destinationChosen: Flow<HomeNext> = destinationChannel.receiveAsFlow()
 
     val uiState: StateFlow<HomeUiState> = combine(vehicle.status, dialog) { v, d -> toUiState(v, d) }
         .stateIn(
@@ -83,7 +100,7 @@ class HomeViewModel(
 
     /** "네, 출근해요" → 회사가 맞는지 묻는다. */
     fun onCommuteClick() {
-        driving.setMode(CommuteMode.Morning)
+        driving.beginCommute()
         // CLAUDE.md: 출근 버튼을 누르면 차량 상태를 한 문장으로 읽어준다.
         speakJob?.cancel()
         speakJob = viewModelScope.launch { voice.speak(vehicleSentence(vehicle.status.value)) }
@@ -120,7 +137,8 @@ class HomeViewModel(
                         updateVoice { VoiceInput(transcript = event.text, confirmed = true) }
                         // 무엇을 알아들었는지 잠깐 보여준 뒤 넘어간다.
                         delay(CONFIRM_DELAY_MS)
-                        chooseDestination(resolvePlace(event.text))
+                        if (dialog.value is HomeDialog.AskTrip) chooseTrip(resolvePlace(event.text, places.recentTripPlaces()))
+                        else chooseDestination(resolvePlace(event.text, places.recentPlaces()))
                     }
                 }
             }
@@ -131,7 +149,27 @@ class HomeViewModel(
     fun chooseDestination(place: Place) {
         stopListening()
         dialog.value = HomeDialog.None
-        destinationChannel.trySend(place)
+        destinationChannel.trySend(HomeNext.Commute(place))
+    }
+
+    /** "출장 가요" → 어디로 가는지 묻는다(18). 일정에 회사 밖 미팅이 있으면 먼저 제안한다. */
+    fun onBusinessTripClick() {
+        stopSpeaking()
+        val now = LocalTime.now()
+        val event = calendar.todayEvents().sortedBy { it.time }.firstOrNull { it.outside && it.place != null && it.time.isAfter(now) }
+            ?: calendar.todayEvents().firstOrNull { it.outside && it.place != null }
+        val suggestion = event?.let { e ->
+            val arrival = now.plusMinutes(places.estimatedMinutes(e.place!!).toLong())
+            TripSuggestion(e, e.place, "${arrival.hour}시 %02d분".format(arrival.minute))
+        }
+        dialog.value = HomeDialog.AskTrip(suggestion, places.recentTripPlaces())
+        startListening()
+    }
+
+    fun chooseTrip(place: Place) {
+        stopListening()
+        dialog.value = HomeDialog.None
+        destinationChannel.trySend(HomeNext.Business(place))
     }
 
     /** "퇴근이에요": 퇴근 모드로 바꾸고 11로 넘어간다. */
@@ -175,13 +213,17 @@ class HomeViewModel(
     }
 
     private fun updateVoice(transform: (VoiceInput) -> VoiceInput) = dialog.update { d ->
-        if (d is HomeDialog.AskDestination) d.copy(voice = transform(d.voice)) else d
+        when (d) {
+            is HomeDialog.AskDestination -> d.copy(voice = transform(d.voice))
+            is HomeDialog.AskTrip -> d.copy(voice = transform(d.voice))
+            else -> d
+        }
     }
 
     /** 말한 문장에서 목적지를 찾는다. 최근에 간 곳 이름이 들어 있으면 그곳, 아니면 말한 곳 그대로. */
-    private fun resolvePlace(text: String): Place {
+    private fun resolvePlace(text: String, recent: List<RecentPlace>): Place {
         val bare = { s: String -> s.replace("[", "").replace("]", "").replace(" ", "") }
-        places.recentPlaces().firstOrNull { bare(text).contains(bare(it.place.name)) }?.let { return it.place }
+        recent.firstOrNull { bare(text).contains(bare(it.place.name)) }?.let { return it.place }
         val name = text.trim()
             .removeSuffix("가줘").removeSuffix("가 줘").removeSuffix("안내해줘").trim()
             .removeSuffix("으로").removeSuffix("로").trim()
@@ -212,7 +254,7 @@ class HomeViewModel(
 
     companion object {
         fun factory(c: AppContainer) = viewModelFactory {
-            initializer { HomeViewModel(c.vehicleRepository, c.placeRepository, c.speechRepository, c.voiceRepository, c.drivingAssistant) }
+            initializer { HomeViewModel(c.vehicleRepository, c.placeRepository, c.speechRepository, c.voiceRepository, c.drivingAssistant, c.calendarRepository) }
         }
 
         private const val CONFIRM_DELAY_MS = 1_200L

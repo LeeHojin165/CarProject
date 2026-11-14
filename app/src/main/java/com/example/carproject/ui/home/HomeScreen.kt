@@ -43,17 +43,28 @@ fun HomeScreen(
     viewModel: HomeViewModel,
     onDestinationChosen: (Place) -> Unit,
     onLeaveWork: () -> Unit,
-    onBusinessTrip: () -> Unit,
+    onTripChosen: (Place) -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    LaunchedEffect(viewModel) { viewModel.destinationChosen.collect(onDestinationChosen) }
+    LaunchedEffect(viewModel) {
+        viewModel.destinationChosen.collect { next ->
+            when (next) {
+                is HomeNext.Commute -> onDestinationChosen(next.place)
+                is HomeNext.Business -> onTripChosen(next.place)
+            }
+        }
+    }
     val choose: (Place) -> Unit = viewModel::chooseDestination
     Box(Modifier.fillMaxSize()) {
-        HomeContent(state, viewModel::onCommuteClick, { viewModel.onLeaveWorkClick(); onLeaveWork() }, onBusinessTrip)
+        HomeContent(state, viewModel::onCommuteClick, { viewModel.onLeaveWorkClick(); onLeaveWork() }, viewModel::onBusinessTripClick)
         when (val d = state.dialog) {
             HomeDialog.None -> Unit
             is HomeDialog.ConfirmWork -> ConfirmWorkDialog(
                 d, onGoToWork = choose, onOtherPlace = viewModel::onOtherPlaceClick, onDismiss = viewModel::dismissDialog,
+            )
+            is HomeDialog.AskTrip -> TripDestDialog(
+                d, onPlaceChosen = viewModel::chooseTrip,
+                onRetryVoice = viewModel::startListening, onDismiss = viewModel::dismissDialog,
             )
             is HomeDialog.AskDestination -> AskDestinationDialog(
                 d, onPlaceChosen = choose, onBackToWork = viewModel::showConfirmWork,

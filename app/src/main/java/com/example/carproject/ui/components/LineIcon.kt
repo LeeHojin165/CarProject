@@ -47,6 +47,9 @@ enum class AppIcon(vararg val paths: String) {
     SeatHeat("M5 20v-6a3 3 0 0 1 3-3h5l4 4v5", "M9 4c-1 1.3 1 2.2 0 3.5M13 4c-1 1.3 1 2.2 0 3.5"),
     Timer(circle(12f, 13f, 8f), "M12 9v4l2.5 2M10 2h4"),
     Leaf("M12 21v-8", "M12 13c0-4 2.5-7 7-7 0 4.5-3 7-7 7z", "M12 15c0-3-2-5.5-6-5.5 0 3.5 2.5 5.5 6 5.5z"),
+    Check("M5 12.5l4.5 4.5L19 7.5"),
+    Calendar(rect(3f, 5f, 18f, 16f, 3f), "M3 10h18M8 3v4M16 3v4"),
+    Document(rect(5f, 3.5f, 14f, 17f, 2.5f), "M9 8.5h6M9 12h6M9 15.5h3.5"),
     Building("M3 21V9l6-4v16M9 21h12V11l-6-3", "M13 13h4M13 17h4"),
 }
 

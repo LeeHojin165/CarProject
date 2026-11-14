@@ -13,6 +13,10 @@ import com.example.carproject.data.fake.FakeParkingRepository
 import com.example.carproject.data.fake.FakeChargingRepository
 import com.example.carproject.data.fake.FakeOffModeRepository
 import com.example.carproject.data.fake.FakePickupRepository
+import com.example.carproject.data.fake.FakeProfileRepository
+import com.example.carproject.data.fake.FakeTripLogRepository
+import com.example.carproject.data.repository.ProfileRepository
+import com.example.carproject.data.repository.TripLogRepository
 import com.example.carproject.data.repository.ChargingRepository
 import com.example.carproject.data.repository.OffModeRepository
 import com.example.carproject.data.repository.PickupRepository
@@ -75,6 +79,8 @@ class AppContainer(context: Context) {
     val offModeRepository: OffModeRepository = FakeOffModeRepository()
     val chargingRepository: ChargingRepository = FakeChargingRepository()
     val pickupRepository: PickupRepository = FakePickupRepository()
+    val profileRepository: ProfileRepository = FakeProfileRepository()
+    val tripLogRepository: TripLogRepository = FakeTripLogRepository()
     val screenRouter = ScreenRouter(context)
     val parkingWatcher = ParkingWatcher(appScope, gearRepository, drivingAssistant, placeRepository, screenRouter)
     val demoControls = DemoControls(gearRepository, fakeVehicle, drivingAssistant, screenRouter, pickupRepository)

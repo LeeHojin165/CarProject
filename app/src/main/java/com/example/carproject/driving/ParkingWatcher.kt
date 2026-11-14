@@ -35,6 +35,13 @@ class ParkingWatcher(
             router.open(ScreenRequest.PickupWait)
             return
         }
+        // 출장지에 도착하면 운행기록을 채운다(20).
+        if (driving.tripKind == DrivingAssistant.TripKind.Business && driving.businessTrip != null) {
+            Log.i(TAG, "P로 바뀜 → 출장지 도착, 운행기록")
+            driving.stopDriving()
+            router.open(ScreenRequest.TripLog)
+            return
+        }
         val place = driving.destination
             ?: if (driving.mode.value == CommuteMode.Evening) places.home() else places.workplace()
         Log.i(TAG, "P로 바뀜 → 주차 위치 묻기: ${place.name}")

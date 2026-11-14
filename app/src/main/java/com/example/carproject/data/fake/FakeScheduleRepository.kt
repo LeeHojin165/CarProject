@@ -11,7 +11,11 @@ import java.time.LocalTime
 class FakeCalendarRepository : CalendarRepository {
     override fun todayEvents() = listOf(
         CalendarEvent(LocalTime.of(9, 0), "주간 회의"),
-        CalendarEvent(LocalTime.of(11, 30), "고객사 미팅", location = "[미팅 장소]", outside = true),
+        CalendarEvent(
+            LocalTime.of(11, 30), "고객사 미팅", location = "[미팅 장소]", outside = true,
+            place = FakePlaceRepository.CLIENT,
+            tasks = listOf("제안서 최종본 공유", "견적 일정 확인", "다음 미팅 날짜 잡기"),
+        ),
         CalendarEvent(LocalTime.of(15, 0), "디자인 리뷰"),
     )
 }
