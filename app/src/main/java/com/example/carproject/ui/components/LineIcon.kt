@@ -41,6 +41,8 @@ enum class AppIcon(vararg val paths: String) {
     Briefcase(rect(3.5f, 7f, 17f, 12.5f, 2.5f), "M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7"),
     PinBold("M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z", circle(12f, 9.5f, 2.5f)),
     CheckCircle(circle(12f, 12f, 9f), "M8 12.3l2.8 2.8L16 9.5"),
+    Back("M15 5l-7 7 7 7"),
+    Image(rect(3f, 5f, 18f, 14f, 2.5f), circle(8.5f, 10f, 1.6f), "M21 16l-5-5-9 8"),
     Building("M3 21V9l6-4v16M9 21h12V11l-6-3", "M13 13h4M13 17h4"),
 }
 

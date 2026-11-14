@@ -1,7 +1,12 @@
 package com.example.carproject.driving
 
 import android.util.Log
+import com.example.carproject.data.model.ChargingStation
 import com.example.carproject.data.model.Place
+import com.example.carproject.data.model.Reservation
+import com.example.carproject.data.repository.NavigationRepository
+import com.example.carproject.data.repository.PlaceRepository
+import com.example.carproject.data.repository.RouteResult
 import com.example.carproject.data.model.SpeechEvent
 import com.example.carproject.data.repository.CalendarRepository
 import com.example.carproject.data.repository.MessageRepository
@@ -31,6 +36,9 @@ sealed interface DrivingPopup {
 
     /** design/06_DrivingCalm.html: 보냈다고 짧게 알린다. */
     data class Sent(val arrivalText: String) : DrivingPopup
+
+    /** design/15_PickupApproach.html: 예약한 가게에 다가가면 픽업 번호와 주차 정보를 알린다. */
+    data class PickupApproach(val reservation: Reservation, val distanceText: String) : DrivingPopup
 }
 
 /**
@@ -44,6 +52,8 @@ class DrivingAssistant(
     private val messages: MessageRepository,
     private val speech: SpeechRepository,
     private val voice: VoiceRepository,
+    private val places: PlaceRepository,
+    private val navigation: NavigationRepository,
 ) {
     private val _popup = MutableStateFlow<DrivingPopup>(DrivingPopup.None)
     val popup: StateFlow<DrivingPopup> = _popup.asStateFlow()
@@ -63,6 +73,38 @@ class DrivingAssistant(
     /** 오늘 이번 길의 거리·시간. 실제 운행 기록이 없어서 가짜 값이다. */
     fun tripSummary(): String = if (_mode.value == CommuteMode.Evening) "18.6km · 44분" else "18.4km · 41분"
 
+    /** 퇴근길에 들를 충전소(12에서 고름). */
+    var charger: ChargingStation? = null
+        private set
+
+    /** 퇴근길 픽업 예약(14에서 예약). */
+    var reservation: Reservation? = null
+        private set
+
+    /** 01 "퇴근이에요": 퇴근 모드로 바꾸고 지난 퇴근 계획을 비운다. */
+    fun beginLeaveWork() {
+        setMode(CommuteMode.Evening)
+        charger = null
+        reservation = null
+    }
+
+    fun chooseCharger(station: ChargingStation?) {
+        charger = station
+    }
+
+    fun setReservation(r: Reservation) {
+        reservation = r
+    }
+
+    /** 집으로 출발. 고른 충전소·픽업 가게를 경유지로 넣는다(최대 2곳). */
+    suspend fun departHome(): RouteResult {
+        val home = places.home()
+        val stops = listOfNotNull(charger?.place, reservation?.store?.place)
+        val result = navigation.startRoute(home, stops)
+        if (result !is RouteResult.Failed) onRouteStarted(home)
+        return result
+    }
+
     /** 지금 가고 있는(또는 마지막으로 간) 목적지. 주차 위치를 물을 때 장소 이름으로 쓴다. */
     var destination: Place? = null
         private set
@@ -76,8 +118,15 @@ class DrivingAssistant(
         destination = place
         driveJob?.cancel()
         driveJob = scope.launch {
-            delay(LATE_CHECK_DELAY_MS)
-            showLateNotice(FAKE_DELAY_MINUTES)
+            if (_mode.value == CommuteMode.Morning) {
+                // 출근길: 가짜 교통 정보로 잠시 뒤 지각 여부를 판단한다.
+                delay(LATE_CHECK_DELAY_MS)
+                showLateNotice(FAKE_DELAY_MINUTES)
+            } else if (reservation != null) {
+                // 퇴근길: 예약한 가게에 가까워지면 알린다(시연용으로 잠시 뒤).
+                delay(PICKUP_APPROACH_DELAY_MS)
+                showPickupApproach()
+            }
         }
     }
 
@@ -103,6 +152,20 @@ class DrivingAssistant(
             delay(NO_ANSWER_CLOSE_MS)
             listen.cancel()
             if (_popup.value == notice) _popup.value = DrivingPopup.None
+        }
+    }
+
+    /** 15: 예약한 가게 300m 앞. 예약이 없으면(시연 메뉴) 첫 가게로 가짜 예약을 만든다. */
+    fun showPickupApproach(fallback: Reservation? = null) {
+        val r = reservation ?: fallback ?: return
+        val popup = DrivingPopup.PickupApproach(r, "300m")
+        _popup.value = popup
+        popupJob?.cancel()
+        popupJob = scope.launch {
+            val kind = r.store.place.name.replace("[", "").replace("]", "")
+            voice.speak("300미터 앞 ${r.store.side}, 예약한 ${kind}이에요. 픽업 번호는 ${r.pickupNumber.toList().joinToString(" ")}이에요.")
+            delay(PICKUP_POPUP_SHOW_MS)
+            if (_popup.value == popup) _popup.value = DrivingPopup.None
         }
     }
 
@@ -156,5 +219,7 @@ class DrivingAssistant(
         const val LATE_CHECK_DELAY_MS = 6_000L
         const val NO_ANSWER_CLOSE_MS = 20_000L
         const val SENT_SHOW_MS = 4_000L
+        const val PICKUP_APPROACH_DELAY_MS = 8_000L
+        const val PICKUP_POPUP_SHOW_MS = 20_000L
     }
 }

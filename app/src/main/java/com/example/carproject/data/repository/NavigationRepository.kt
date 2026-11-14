@@ -16,6 +16,6 @@ sealed interface RouteResult {
 }
 
 interface NavigationRepository {
-    /** 목적지로 길안내를 시작한다. */
-    suspend fun startRoute(place: Place): RouteResult
+    /** 목적지로 길안내를 시작한다. waypoints는 최대 2곳(Pleos 제한), 들르는 순서대로. */
+    suspend fun startRoute(place: Place, waypoints: List<Place> = emptyList()): RouteResult
 }

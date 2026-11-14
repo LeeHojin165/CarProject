@@ -9,6 +9,6 @@ class FallbackNavigationRepository(
     private val pleos: PleosNavigationRepository,
     private val fake: FakeNavigationRepository,
 ) : NavigationRepository {
-    override suspend fun startRoute(place: Place): RouteResult =
-        if (pleos.ensureReady()) pleos.startRoute(place) else fake.startRoute(place)
+    override suspend fun startRoute(place: Place, waypoints: List<Place>): RouteResult =
+        if (pleos.ensureReady()) pleos.startRoute(place, waypoints) else fake.startRoute(place)
 }

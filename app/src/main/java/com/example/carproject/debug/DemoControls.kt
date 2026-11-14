@@ -4,6 +4,8 @@ import android.util.Log
 import com.example.carproject.data.fake.FakeVehicleRepository
 import com.example.carproject.data.model.Gear
 import com.example.carproject.data.model.Place
+import com.example.carproject.data.model.Reservation
+import com.example.carproject.data.repository.PickupRepository
 import com.example.carproject.data.model.Seat
 import com.example.carproject.data.model.VehicleStatus
 import com.example.carproject.data.repository.GearRepository
@@ -22,6 +24,7 @@ class DemoControls(
     private val vehicle: FakeVehicleRepository,
     private val driving: DrivingAssistant,
     private val router: ScreenRouter,
+    private val pickup: PickupRepository,
 ) {
     val gear: StateFlow<Gear> get() = gears.gear
     val vehicleStatus: StateFlow<VehicleStatus> get() = vehicle.status
@@ -34,7 +37,8 @@ class DemoControls(
     fun setMode(mode: CommuteMode) = driving.setMode(mode)
 
     fun setBatteryLow(low: Boolean) = edit("배터리 ${if (low) "부족" else "보통"}") {
-        if (low) it.copy(evBatteryPercent = 12, rangeKm = 48) else it.copy(evBatteryPercent = 62, rangeKm = 280)
+        // 부족 값은 12 충전 제안 디자인과 맞춘다(14% · 58km).
+        if (low) it.copy(evBatteryPercent = 14, rangeKm = 58) else it.copy(evBatteryPercent = 62, rangeKm = 280)
     }
 
     fun setPassengerWindowOpen(open: Boolean) = edit("조수석 창문 ${if (open) "열림" else "닫힘"}") {
@@ -46,6 +50,12 @@ class DemoControls(
     fun showLateNotice() = driving.showLateNotice()
 
     fun closePopups() = driving.onDismiss()
+
+    /** 15 픽업 접근 알림. 예약이 없으면 첫 가게로 가짜 예약을 만들어 띄운다. */
+    fun showPickupApproach() {
+        val store = pickup.storesOnRouteHome().first()
+        driving.showPickupApproach(Reservation(store, "1234", store.pickupEnd))
+    }
 
     fun goHome() {
         driving.stopDriving()

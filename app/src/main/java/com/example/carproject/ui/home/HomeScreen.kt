@@ -49,7 +49,7 @@ fun HomeScreen(
     LaunchedEffect(viewModel) { viewModel.destinationChosen.collect(onDestinationChosen) }
     val choose: (Place) -> Unit = viewModel::chooseDestination
     Box(Modifier.fillMaxSize()) {
-        HomeContent(state, viewModel::onCommuteClick, onLeaveWork, onBusinessTrip)
+        HomeContent(state, viewModel::onCommuteClick, { viewModel.onLeaveWorkClick(); onLeaveWork() }, onBusinessTrip)
         when (val d = state.dialog) {
             HomeDialog.None -> Unit
             is HomeDialog.ConfirmWork -> ConfirmWorkDialog(
