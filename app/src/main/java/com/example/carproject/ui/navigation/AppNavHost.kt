@@ -7,7 +7,18 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.carproject.ui.arrival.ArrivalScreen
 import com.example.carproject.ui.arrival.ArrivalViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
+import androidx.navigation.navArgument
+import com.example.carproject.ui.leave.ChargeRouteScreen
+import com.example.carproject.ui.leave.ChargeRouteViewModel
+import com.example.carproject.ui.leave.LeaveNext
+import com.example.carproject.ui.leave.OffModeScreen
+import com.example.carproject.ui.leave.OffModeViewModel
+import com.example.carproject.ui.leave.PickupDetailScreen
+import com.example.carproject.ui.leave.PickupDetailViewModel
+import com.example.carproject.ui.leave.PickupOfferScreen
+import com.example.carproject.ui.leave.PickupOfferViewModel
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.carproject.data.model.Place
@@ -36,6 +47,12 @@ object Routes {
     val PARK_ASK = PlaceArgs.pattern(PARK_ASK_BASE)
     const val PARK_SAVED = "park_saved"
     const val ARRIVAL = "arrival"
+    const val OFF_MODE = "off_mode"
+    const val CHARGE_ROUTE = "charge_route"
+    const val PICKUP_OFFER = "pickup_offer"
+    const val PICKUP_DETAIL = "pickup_detail/{${PickupDetailViewModel.ARG_STORE_ID}}"
+
+    fun pickupDetail(storeId: String) = "pickup_detail/$storeId"
 
     fun briefing(place: Place) = PlaceArgs.route(BRIEFING_BASE, place)
     fun parkAsk(place: Place) = PlaceArgs.route(PARK_ASK_BASE, place)
@@ -75,7 +92,7 @@ fun AppNavHost(container: AppContainer) {
                 HomeScreen(
                     viewModel = viewModel(factory = HomeViewModel.factory(container)),
                     onDestinationChosen = { place -> nav.navigate(Routes.briefing(place)) },
-                    onLeaveWork = { /* TODO 11_OffMode */ },
+                    onLeaveWork = { nav.navigate(Routes.OFF_MODE) },
                     onBusinessTrip = { /* TODO 18_TripDest */ },
                 )
             }
@@ -108,6 +125,46 @@ fun AppNavHost(container: AppContainer) {
                     viewModel = viewModel(factory = ParkSavedViewModel.factory(container)),
                     onDone = { nav.navigate(Routes.ARRIVAL) },
                     onRetry = { nav.popBackStack() },
+                )
+            }
+        }
+        composable(Routes.OFF_MODE) {
+            Screen(tripMode) {
+                OffModeScreen(
+                    viewModel = viewModel(factory = OffModeViewModel.factory(container)),
+                    onNext = { next ->
+                        nav.navigate(if (next == LeaveNext.Charge) Routes.CHARGE_ROUTE else Routes.PICKUP_OFFER)
+                    },
+                )
+            }
+        }
+        composable(Routes.CHARGE_ROUTE) {
+            Screen(tripMode) {
+                ChargeRouteScreen(
+                    viewModel = viewModel(factory = ChargeRouteViewModel.factory(container)),
+                    onNext = { nav.navigate(Routes.PICKUP_OFFER) },
+                )
+            }
+        }
+        composable(Routes.PICKUP_OFFER) {
+            Screen(tripMode) {
+                PickupOfferScreen(
+                    viewModel = viewModel(factory = PickupOfferViewModel.factory(container)),
+                    onDetail = { nav.navigate(Routes.pickupDetail(it.id)) },
+                    // 길안내가 시작되면 내비가 앞으로 나온다. 앱은 처음 화면으로 돌려 둔다.
+                    onDeparted = { nav.navigate(Routes.HOME) { popUpTo(Routes.HOME) } },
+                )
+            }
+        }
+        composable(
+            Routes.PICKUP_DETAIL,
+            arguments = listOf(navArgument(PickupDetailViewModel.ARG_STORE_ID) { type = NavType.StringType }),
+        ) {
+            Screen(tripMode) {
+                PickupDetailScreen(
+                    viewModel = viewModel(factory = PickupDetailViewModel.factory(container)),
+                    onBack = { nav.popBackStack() },
+                    onDeparted = { nav.navigate(Routes.HOME) { popUpTo(Routes.HOME) } },
                 )
             }
         }

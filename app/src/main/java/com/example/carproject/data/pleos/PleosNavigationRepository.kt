@@ -4,7 +4,10 @@ import android.content.Context
 import android.util.Log
 import ai.pleos.playground.navi.constants.NaviErrorCode
 import ai.pleos.playground.navi.data.NavigationScreenRequest
+import ai.pleos.playground.navi.constants.WaypointIndex
+import ai.pleos.playground.navi.data.RequestWaypointInfo
 import ai.pleos.playground.navi.data.RouteInfo
+import ai.pleos.playground.navi.data.RouteWithWaypointsRequest
 import ai.pleos.playground.navi.data.RouteStartInfo
 import ai.pleos.playground.navi.helper.NaviHelper
 import ai.pleos.playground.navi.helper.listener.NaviHelperEventListener
@@ -58,7 +61,7 @@ class PleosNavigationRepository(context: Context) {
         ok
     }
 
-    suspend fun startRoute(place: Place): RouteResult = withContext(Dispatchers.Main) {
+    suspend fun startRoute(place: Place, waypoints: List<Place> = emptyList()): RouteResult = withContext(Dispatchers.Main) {
         val navi = helper ?: return@withContext RouteResult.Failed("내비게이션을 쓸 수 없어요")
         val lat = place.latitude
         val lon = place.longitude
@@ -81,16 +84,29 @@ class PleosNavigationRepository(context: Context) {
         }
         try {
             navi.addListener(listener)
-            navi.requestRoute(
-                RouteInfo(
-                    latitude = lat,
-                    longitude = lon,
-                    poiName = place.name,
-                    poiId = "", // POI 검색 없이 좌표로만 안내
-                    address = place.address,
-                    poiSubId = "",
-                )
+            val destination = RouteInfo(
+                latitude = lat,
+                longitude = lon,
+                poiName = place.name,
+                poiId = "", // POI 검색 없이 좌표로만 안내
+                address = place.address,
+                poiSubId = "",
             )
+            // 좌표가 있는 경유지만, Pleos 제한대로 최대 2곳.
+            val stops = waypoints.filter { it.latitude != null && it.longitude != null }.take(2)
+            if (stops.isEmpty()) {
+                navi.requestRoute(destination)
+            } else {
+                val indexes = listOf(WaypointIndex.FIRST, WaypointIndex.SECOND)
+                navi.requestRouteWithWaypoints(
+                    RouteWithWaypointsRequest(
+                        destination,
+                        stops.mapIndexed { i, w ->
+                            RequestWaypointInfo(w.latitude!!, w.longitude!!, w.name, indexes[i], "", w.address, "", "")
+                        },
+                    )
+                )
+            }
             // 경로 계산 결과를 기다린다. 응답이 없어도 요청은 들어갔으니 시작한 것으로 본다.
             withTimeoutOrNull(ROUTE_TIMEOUT_MS) { outcome.await() } ?: RouteResult.Started
         } catch (e: Exception) {

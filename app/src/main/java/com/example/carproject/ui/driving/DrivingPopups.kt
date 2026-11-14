@@ -1,6 +1,8 @@
 package com.example.carproject.ui.driving
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,6 +42,7 @@ fun DrivingPopupContent(popup: DrivingPopup, onSend: () -> Unit, onDismiss: () -
         DrivingPopup.None -> Unit
         is DrivingPopup.LateNotice -> LateNoticeCard(popup, onSend, onDismiss)
         is DrivingPopup.Sent -> SentPill(popup)
+        is DrivingPopup.PickupApproach -> PickupApproachCard(popup, onDismiss)
     }
 }
 
@@ -104,6 +107,61 @@ fun SentPill(sent: DrivingPopup.Sent) {
         Text("팀 채널에 알렸어요", style = ds(36, 700))
         Text("· ${sent.arrivalText} 도착 예정", style = ds(32, color = c.textSub, tabular = true))
     }
+}
+
+/** design/15_PickupApproach.html: 너비 1160, 다크. 누르면 닫힌다. */
+@Composable
+fun PickupApproachCard(popup: DrivingPopup.PickupApproach, onDismiss: () -> Unit) {
+    val c = appColors
+    val r = popup.reservation
+    val kind = r.store.place.name.replace("[", "").replace("]", "")
+    Column(
+        Modifier
+            .width(1160.dp)
+            .shadow(48.dp, RoundedCornerShape(40.dp), ambientColor = Color(0x8C000000), spotColor = Color(0x8C000000))
+            .clip(RoundedCornerShape(40.dp))
+            .background(c.background)
+            .clickable(onClick = onDismiss)
+            .padding(horizontal = 44.dp, vertical = 36.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(36.dp).clip(RoundedCornerShape(10.dp)).background(c.accent))
+            Text(APP_NAME, style = ds(26, 600, color = c.textSub))
+        }
+        Text("${popup.distanceText} 앞 ${r.store.side}, 예약한 ${kind}이에요.", style = ds(56, 800, -0.02, 1.25))
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            InfoBox(Modifier.weight(1f)) {
+                Text("픽업 번호", style = ds(26, color = c.textSub))
+                Text(r.pickupNumber, style = ds(72, 800, 0.04, 1.1, tabular = true))
+                Text("결제 완료 · %d:%02d까지".format(r.payUntil.hour, r.payUntil.minute), style = ds(24, color = c.textSub, tabular = true))
+            }
+            InfoBox(Modifier.weight(1f)) {
+                Text("주차", style = ds(26, color = c.textSub))
+                Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                    LineIcon(AppIcon.Parking, 44.dp, color = c.link, strokeWidth = 2.2f)
+                    Text(r.store.parking, style = ds(44, 800, lineHeight = 1.3, color = c.link))
+                }
+                Text("가게가 알려준 정보예요", style = ds(24, color = c.textSub))
+            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
+            LineIcon(AppIcon.Speaker, 30.dp, color = c.textSub, strokeWidth = 2.2f)
+            Text("픽업 번호는 폰으로도 보내 뒀어요. 같은 내용을 음성으로도 알려드려요.", style = ds(26, color = c.textSub))
+        }
+    }
+}
+
+@Composable
+private fun InfoBox(modifier: Modifier, content: @Composable ColumnScope.() -> Unit) {
+    Column(
+        modifier
+            .clip(RoundedCornerShape(28.dp))
+            .background(appColors.subtle)
+            .padding(horizontal = 28.dp, vertical = 22.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        content = content,
+    )
 }
 
 @Preview(widthDp = 700, heightDp = 400, showBackground = true, backgroundColor = 0xFFEDEBE8)

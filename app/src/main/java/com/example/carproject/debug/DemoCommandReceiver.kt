@@ -27,6 +27,7 @@ class DemoCommandReceiver : BroadcastReceiver() {
         when (intent.getStringExtra("popup")) {
             "late" -> demo.showLateNotice()
             "close" -> demo.closePopups()
+            "pickup" -> demo.showPickupApproach()
         }
         intent.getStringExtra("battery")?.let { demo.setBatteryLow(it == "low") }
         intent.getStringExtra("window")?.let { demo.setPassengerWindowOpen(it == "open") }

@@ -6,6 +6,12 @@ private fun lastHangulJong(word: String): Int? {
     return (ch - '가') % 28
 }
 
+/** "빵이", "반찬이", "유제품이", "커피가"처럼 이/가를 붙인다. */
+fun withIGa(word: String): String {
+    val jong = lastHangulJong(word)
+    return if (jong == null || jong == 0) "${word}가" else "${word}이"
+}
+
 /** "회사로", "집으로", "서울로"처럼 (으)로를 붙인다. */
 fun withRo(word: String): String {
     val jong = lastHangulJong(word)

@@ -134,6 +134,12 @@ class HomeViewModel(
         destinationChannel.trySend(place)
     }
 
+    /** "퇴근이에요": 퇴근 모드로 바꾸고 11로 넘어간다. */
+    fun onLeaveWorkClick() {
+        stopSpeaking()
+        driving.beginLeaveWork()
+    }
+
     fun dismissDialog() {
         stopListening()
         dialog.update { HomeDialog.None }

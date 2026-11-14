@@ -128,7 +128,7 @@ private fun DebugPanel(demo: DemoControls, onClose: () -> Unit) {
         }
         Section("배터리") {
             Choice("62% 보통", !batteryLow) { demo.setBatteryLow(false) }
-            Choice("12% 부족", batteryLow) { demo.setBatteryLow(true) }
+            Choice("14% 부족", batteryLow) { demo.setBatteryLow(true) }
         }
         Section("조수석 창문") {
             Choice("닫힘", !windowOpen) { demo.setPassengerWindowOpen(false) }
@@ -140,6 +140,7 @@ private fun DebugPanel(demo: DemoControls, onClose: () -> Unit) {
         }
         Section("장면") {
             Action("지각 알림") { demo.showLateNotice(); onClose() }
+            Action("픽업 알림") { demo.showPickupApproach(); onClose() }
             Action("팝업 닫기") { demo.closePopups() }
             Action("처음 화면") { demo.goHome(); onClose() }
         }

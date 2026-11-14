@@ -10,6 +10,12 @@ import com.example.carproject.data.fake.FakeCalendarRepository
 import com.example.carproject.data.fake.FakeMessageRepository
 import com.example.carproject.data.fake.FakeNavigationRepository
 import com.example.carproject.data.fake.FakeParkingRepository
+import com.example.carproject.data.fake.FakeChargingRepository
+import com.example.carproject.data.fake.FakeOffModeRepository
+import com.example.carproject.data.fake.FakePickupRepository
+import com.example.carproject.data.repository.ChargingRepository
+import com.example.carproject.data.repository.OffModeRepository
+import com.example.carproject.data.repository.PickupRepository
 import com.example.carproject.data.car.CarGearRepository
 import com.example.carproject.data.repository.GearRepository
 import com.example.carproject.data.repository.ParkingRepository
@@ -60,10 +66,16 @@ class AppContainer(context: Context) {
         pleos = PleosNavigationRepository(context),
         fake = FakeNavigationRepository(),
     )
-    val drivingAssistant = DrivingAssistant(appScope, calendarRepository, messageRepository, speechRepository, voiceRepository)
+    val drivingAssistant = DrivingAssistant(
+        appScope, calendarRepository, messageRepository, speechRepository, voiceRepository,
+        placeRepository, navigationRepository,
+    )
     val gearRepository: GearRepository = CarGearRepository(context)
     val parkingRepository: ParkingRepository = FakeParkingRepository()
+    val offModeRepository: OffModeRepository = FakeOffModeRepository()
+    val chargingRepository: ChargingRepository = FakeChargingRepository()
+    val pickupRepository: PickupRepository = FakePickupRepository()
     val screenRouter = ScreenRouter(context)
     val parkingWatcher = ParkingWatcher(appScope, gearRepository, drivingAssistant, placeRepository, screenRouter)
-    val demoControls = DemoControls(gearRepository, fakeVehicle, drivingAssistant, screenRouter)
+    val demoControls = DemoControls(gearRepository, fakeVehicle, drivingAssistant, screenRouter, pickupRepository)
 }
