@@ -35,6 +35,8 @@ data class PickupStore(
     val storage: String,
     val eatBy: String,
     val minutesToHomeAfter: Int,
+    /** 구하는 음식 무게(kg). 마이페이지 기록에 쓴다. */
+    val weightKg: Double,
     /** 가게가 알려준 주차 정보 */
     val parking: String,
     /** 도로 어느 쪽에 있는지 */

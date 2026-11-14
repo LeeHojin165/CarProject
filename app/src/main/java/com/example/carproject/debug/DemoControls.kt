@@ -51,6 +51,13 @@ class DemoControls(
 
     fun closePopups() = driving.onDismiss()
 
+    /** 16 픽업 가게 앞 장면으로 바로 간다. */
+    fun arriveAtPickup() {
+        val store = pickup.storesOnRouteHome().first()
+        driving.forceArriveAtPickup(Reservation(store, "1234", store.pickupEnd))
+        router.open(ScreenRequest.PickupWait)
+    }
+
     /** 15 픽업 접근 알림. 예약이 없으면 첫 가게로 가짜 예약을 만들어 띄운다. */
     fun showPickupApproach() {
         val store = pickup.storesOnRouteHome().first()
