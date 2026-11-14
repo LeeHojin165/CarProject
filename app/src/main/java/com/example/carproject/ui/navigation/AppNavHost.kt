@@ -11,6 +11,10 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.navArgument
 import com.example.carproject.ui.leave.ChargeRouteScreen
+import com.example.carproject.ui.trip.BusinessTripScreen
+import com.example.carproject.ui.trip.BusinessTripViewModel
+import com.example.carproject.ui.trip.TripLogScreen
+import com.example.carproject.ui.trip.TripLogViewModel
 import com.example.carproject.ui.pickup.PickupDepartScreen
 import com.example.carproject.ui.pickup.PickupDepartViewModel
 import com.example.carproject.ui.pickup.PickupWaitScreen
@@ -47,6 +51,9 @@ object Routes {
     const val HOME = "home"
     private const val BRIEFING_BASE = "briefing"
     private const val PARK_ASK_BASE = "park_ask"
+    private const val TRIP_BASE = "business_trip"
+    val TRIP = PlaceArgs.pattern(TRIP_BASE)
+    const val TRIP_LOG = "trip_log"
     val BRIEFING = PlaceArgs.pattern(BRIEFING_BASE)
     val PARK_ASK = PlaceArgs.pattern(PARK_ASK_BASE)
     const val PARK_SAVED = "park_saved"
@@ -62,6 +69,7 @@ object Routes {
 
     fun briefing(place: Place) = PlaceArgs.route(BRIEFING_BASE, place)
     fun parkAsk(place: Place) = PlaceArgs.route(PARK_ASK_BASE, place)
+    fun trip(place: Place) = PlaceArgs.route(TRIP_BASE, place)
 }
 
 @Composable
@@ -76,6 +84,7 @@ fun AppNavHost(container: AppContainer) {
                 is ScreenRequest.ParkAsk -> nav.navigate(Routes.parkAsk(request.place)) { launchSingleTop = true }
                 is ScreenRequest.Briefing -> nav.navigate(Routes.briefing(request.place))
                 ScreenRequest.PickupWait -> nav.navigate(Routes.PICKUP_WAIT) { launchSingleTop = true }
+                ScreenRequest.TripLog -> nav.navigate(Routes.TRIP_LOG) { launchSingleTop = true }
                 ScreenRequest.Home -> nav.navigate(Routes.HOME) {
                     popUpTo(nav.graph.id) { inclusive = true }
                     launchSingleTop = true
@@ -100,7 +109,7 @@ fun AppNavHost(container: AppContainer) {
                     viewModel = viewModel(factory = HomeViewModel.factory(container)),
                     onDestinationChosen = { place -> nav.navigate(Routes.briefing(place)) },
                     onLeaveWork = { nav.navigate(Routes.OFF_MODE) },
-                    onBusinessTrip = { /* TODO 18_TripDest */ },
+                    onTripChosen = { place -> nav.navigate(Routes.trip(place)) },
                 )
             }
         }
@@ -113,7 +122,12 @@ fun AppNavHost(container: AppContainer) {
                     viewModel = viewModel(factory = BriefingViewModel.factory(container)),
                     // 길안내가 시작되면 내비 화면이 앞으로 나온다. 주행 중 팝업(05·06)은 다음 단계에서 붙인다.
                     onDeparted = { _, _ -> },
-                    onBusinessTrip = { /* TODO 19_BusinessTrip */ },
+                    // 04 "출장 예약": 오늘 일정의 회사 밖 미팅 장소로 출장 브리핑(19)을 연다.
+                    onBusinessTrip = {
+                        container.calendarRepository.todayEvents()
+                            .firstOrNull { it.outside && it.place != null }?.place
+                            ?.let { nav.navigate(Routes.trip(it)) }
+                    },
                 )
             }
         }
@@ -189,6 +203,23 @@ fun AppNavHost(container: AppContainer) {
                     viewModel = viewModel(factory = PickupDepartViewModel.factory(container)),
                     // 내비가 다시 앞으로 나온다. 앱은 처음 화면으로 돌려 둔다.
                     onDone = { nav.navigate(Routes.HOME) { popUpTo(Routes.HOME) } },
+                )
+            }
+        }
+        composable(Routes.TRIP, arguments = PlaceArgs.navArguments) {
+            Screen(CommuteMode.Morning) {
+                BusinessTripScreen(
+                    viewModel = viewModel(factory = BusinessTripViewModel.factory(container)),
+                    // 길안내가 시작되면 내비가 앞으로 나온다. 앱은 처음 화면으로 돌려 둔다.
+                    onDeparted = { nav.navigate(Routes.HOME) { popUpTo(Routes.HOME) } },
+                )
+            }
+        }
+        composable(Routes.TRIP_LOG) {
+            Screen(CommuteMode.Morning) {
+                TripLogScreen(
+                    viewModel = viewModel(factory = TripLogViewModel.factory(container)),
+                    onSaved = { nav.navigate(Routes.ARRIVAL) },
                 )
             }
         }

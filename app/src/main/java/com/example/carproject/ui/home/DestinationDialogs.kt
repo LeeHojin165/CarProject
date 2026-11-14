@@ -35,6 +35,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.carproject.data.model.Place
 import com.example.carproject.data.model.RecentPlace
@@ -193,18 +194,95 @@ fun AskDestinationDialog(
 }
 
 @Composable
-private fun RecentPlaceButton(recent: RecentPlace, modifier: Modifier, onClick: () -> Unit) {
+private fun RecentPlaceButton(
+    recent: RecentPlace,
+    modifier: Modifier,
+    height: Dp = 120.dp,
+    radius: Dp = 32.dp,
+    titleSize: Int = 34,
+    onClick: () -> Unit,
+) {
     val c = appColors
     Column(
         modifier
-            .height(120.dp)
-            .clip(RoundedCornerShape(32.dp))
+            .height(height)
+            .clip(RoundedCornerShape(radius))
             .background(c.background)
             .clickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = 36.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically),
     ) {
-        Text(recent.place.name, style = ds(34, 700), maxLines = 1)
+        Text(recent.place.name, style = ds(titleSize, 700), maxLines = 1)
         Text(recent.lastVisitedLabel, style = ds(24, color = c.textSub), maxLines = 1)
+    }
+}
+
+/** design/18_TripDest.html: 어디로 출장 가세요? */
+@Composable
+fun TripDestDialog(
+    dialog: HomeDialog.AskTrip,
+    onPlaceChosen: (Place) -> Unit,
+    onRetryVoice: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val c = appColors
+    ModalDialogFrame(onDismiss) {
+        DialogHeading("출장지는 매번 달라서 먼저 여쭤볼게요") {
+            Text("어디로 출장 가세요?", style = ds(72, 800, -0.03, 1.2))
+        }
+        dialog.suggestion?.let { sug ->
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(32.dp))
+                    .background(c.background)
+                    .padding(horizontal = 32.dp, vertical = 28.dp),
+                horizontalArrangement = Arrangement.spacedBy(28.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    Modifier.size(88.dp).clip(RoundedCornerShape(26.dp)).background(c.card),
+                    contentAlignment = Alignment.Center,
+                ) { LineIcon(AppIcon.Calendar, 48.dp, color = c.accent, strokeWidth = 2f) }
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        "오늘 일정에서 찾았어요 · %d:%02d ${sug.event.title}".format(sug.event.time.hour, sug.event.time.minute),
+                        style = ds(26, 700, color = c.accent),
+                    )
+                    Text(sug.place.name, style = ds(40, 800))
+                    Text("${sug.place.address} · ${sug.arrivalText} 도착 예정", style = ds(26, color = c.textSub))
+                }
+                AppButton(
+                    "여기로 가요", { onPlaceChosen(sug.place) },
+                    height = 112.dp, radius = 32.dp, fontSize = 36, tracking = 0.0, horizontalPadding = 40.dp,
+                )
+            }
+        }
+        VoicePromptBox(
+            voice = dialog.voice,
+            example = "[고객사] 수원 공장으로 가줘",
+            confirmedText = "이곳으로 안내할게요",
+            onRetry = onRetryVoice,
+            title = "다른 곳이면 말씀해 주세요",
+            barHeights = listOf(18, 36, 52, 30, 44, 22),
+            titleSize = 32,
+            subSize = 24,
+            paddingH = 32.dp,
+            paddingV = 24.dp,
+            barWidth = 8.dp,
+            barGap = 7.dp,
+            barAreaHeight = 56.dp,
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
+            Text("최근 출장지", style = ds(28, 700, color = c.textSub))
+            Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                dialog.recentPlaces.forEach { recent ->
+                    RecentPlaceButton(recent, Modifier.weight(1f), height = 104.dp, radius = 30.dp, titleSize = 32) {
+                        onPlaceChosen(recent.place)
+                    }
+                }
+            }
+        }
+        Text("고르면 그곳으로 내비게이션을 열고, 출장 화면에 가서 할 일을 띄워요.", style = ds(26, color = c.textSub))
     }
 }

@@ -31,6 +31,10 @@ data class VehicleStatus(
     val lightsOn: Boolean = false,
     val warningLights: List<String> = emptyList(),
     val washerFluidLow: Boolean = true,
+    /** 계기판 누적 주행거리(km). 법인차 운행기록에 쓴다. */
+    val odometerKm: Int = 32_418,
+    /** 평균 연비(km/L). 유류비 계산에 쓴다. */
+    val avgFuelEconomy: Double = 12.0,
     /** 바깥 온도(도). 가짜 값. */
     val outsideTempC: Int = 3,
     /** 내렸을 때도 공조를 켜 둔 상태면 목표 온도. */

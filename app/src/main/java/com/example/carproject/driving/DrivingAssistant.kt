@@ -1,6 +1,7 @@
 package com.example.carproject.driving
 
 import android.util.Log
+import com.example.carproject.data.model.CalendarEvent
 import com.example.carproject.data.model.ChargingStation
 import com.example.carproject.data.model.Place
 import com.example.carproject.data.model.Reservation
@@ -81,6 +82,31 @@ class DrivingAssistant(
     var reservation: Reservation? = null
         private set
 
+    /** 지금 길이 출근·퇴근·출장 중 무엇인지. 장면(05 지각, 20 운행기록)을 고른다. */
+    enum class TripKind { Commute, LeaveWork, Business }
+
+    var tripKind = TripKind.Commute
+        private set
+
+    /** 법인 차량 출장 정보. 출발 계기판 값은 운행기록(20)에 쓴다. */
+    data class BusinessTrip(val place: Place, val event: CalendarEvent?, val startOdometerKm: Int)
+
+    var businessTrip: BusinessTrip? = null
+        private set
+
+    /** 01 "네, 출근해요" */
+    fun beginCommute() {
+        setMode(CommuteMode.Morning)
+        tripKind = TripKind.Commute
+    }
+
+    /** 19 "출발할게요": 운행기록을 시작한다. */
+    fun beginBusinessTrip(place: Place, event: CalendarEvent?, startOdometerKm: Int) {
+        setMode(CommuteMode.Morning)
+        tripKind = TripKind.Business
+        businessTrip = BusinessTrip(place, event, startOdometerKm)
+    }
+
     /** 픽업 진행: 가게 앞에 세우면 AtStore, 받아 오면 PickedUp. */
     enum class PickupStage { None, AtStore, PickedUp }
 
@@ -120,6 +146,7 @@ class DrivingAssistant(
     /** 01 "퇴근이에요": 퇴근 모드로 바꾸고 지난 퇴근 계획을 비운다. */
     fun beginLeaveWork() {
         setMode(CommuteMode.Evening)
+        tripKind = TripKind.LeaveWork
         charger = null
         reservation = null
         pickupStage = PickupStage.None
@@ -155,7 +182,7 @@ class DrivingAssistant(
         destination = place
         driveJob?.cancel()
         driveJob = scope.launch {
-            if (_mode.value == CommuteMode.Morning) {
+            if (_mode.value == CommuteMode.Morning && tripKind == TripKind.Commute) {
                 // 출근길: 가짜 교통 정보로 잠시 뒤 지각 여부를 판단한다.
                 delay(LATE_CHECK_DELAY_MS)
                 showLateNotice(FAKE_DELAY_MINUTES)

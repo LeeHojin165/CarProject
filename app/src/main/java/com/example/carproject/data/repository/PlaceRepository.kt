@@ -8,6 +8,7 @@ interface PlaceRepository {
     fun workplace(): Place
     fun home(): Place
     fun recentPlaces(): List<RecentPlace>
+    fun recentTripPlaces(): List<RecentPlace>
     /** 지금 출발했을 때 걸리는 시간(분). */
     fun estimatedMinutes(to: Place): Int
 }

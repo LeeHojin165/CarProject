@@ -59,6 +59,12 @@ fun VoicePromptBox(
     subSize: Int = 26,
     radius: Dp = 32.dp,
     background: Color = Color.Transparent,
+    title: String = "말씀해 주세요",
+    paddingH: Dp = 40.dp,
+    paddingV: Dp = 32.dp,
+    barWidth: Dp = 10.dp,
+    barGap: Dp = 8.dp,
+    barAreaHeight: Dp = 72.dp,
 ) {
     val c = appColors
     val shape = RoundedCornerShape(radius)
@@ -69,7 +75,7 @@ fun VoicePromptBox(
             .background(background)
             .border(3.dp, if (voice.error != null) c.warning else c.accent, shape)
             .clickable(enabled = !voice.listening && !voice.confirmed, role = Role.Button, onClick = onRetry)
-            .padding(horizontal = 40.dp, vertical = 32.dp),
+            .padding(horizontal = paddingH, vertical = paddingV),
         horizontalArrangement = Arrangement.spacedBy(32.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -78,11 +84,11 @@ fun VoicePromptBox(
                 LineIcon(AppIcon.Mic, 56.dp, color = c.warning, strokeWidth = 2.2f)
             }
         } else {
-            ListeningBars(barHeights, animate = voice.listening)
+            ListeningBars(barHeights, animate = voice.listening, barWidth, barGap, barAreaHeight)
         }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                voice.transcript?.let { "“$it”" } ?: "말씀해 주세요",
+                voice.transcript?.let { "“$it”" } ?: title,
                 style = ds(titleSize, 700), maxLines = 1,
             )
             Text(
@@ -100,7 +106,7 @@ fun VoicePromptBox(
 
 /** 듣고 있음을 보여주는 막대. 디자인의 높이를 기준으로 천천히 오르내린다. */
 @Composable
-private fun ListeningBars(base: List<Int>, animate: Boolean) {
+private fun ListeningBars(base: List<Int>, animate: Boolean, barWidth: Dp, barGap: Dp, areaHeight: Dp) {
     val c = appColors
     val phase by rememberInfiniteTransition(label = "listening").animateFloat(
         initialValue = 0f,
@@ -109,17 +115,17 @@ private fun ListeningBars(base: List<Int>, animate: Boolean) {
         label = "phase",
     )
     Row(
-        Modifier.height(72.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        Modifier.height(areaHeight),
+        horizontalArrangement = Arrangement.spacedBy(barGap),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         base.forEachIndexed { i, h ->
             val k = if (animate) 0.75f + 0.25f * sin(phase + i * 0.9f) else 1f
             Box(
                 Modifier
-                    .width(10.dp)
+                    .width(barWidth)
                     .height((h * k).dp)
-                    .clip(RoundedCornerShape(5.dp))
+                    .clip(RoundedCornerShape(barWidth / 2))
                     .background(c.accent),
             )
         }
