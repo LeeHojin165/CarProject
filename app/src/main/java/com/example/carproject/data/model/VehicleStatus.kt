@@ -31,4 +31,8 @@ data class VehicleStatus(
     val lightsOn: Boolean = false,
     val warningLights: List<String> = emptyList(),
     val washerFluidLow: Boolean = true,
+    /** 바깥 온도(도). 가짜 값. */
+    val outsideTempC: Int = 3,
+    /** 내렸을 때도 공조를 켜 둔 상태면 목표 온도. */
+    val keepClimateTempC: Int? = null,
 )

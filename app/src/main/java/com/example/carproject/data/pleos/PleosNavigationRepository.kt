@@ -117,6 +117,12 @@ class PleosNavigationRepository(context: Context) {
         }
     }
 
+    suspend fun showNavigation() = withContext(Dispatchers.Main) {
+        runCatching { helper?.requestNavigationScreen(NavigationScreenRequest.Foreground) }
+            .onFailure { Log.w(TAG, "내비 화면 열기 실패", it) }
+        Unit
+    }
+
     private fun NaviErrorCode.toMessage() = when (this) {
         NaviErrorCode.CAUSE_LOW_BATTERY -> "배터리가 부족해서 경로를 찾지 못했어요"
         NaviErrorCode.CAUSE_SEARCH_ROUTE_TOO_SHORT_DISTANCE -> "목적지가 너무 가까워요"

@@ -141,6 +141,7 @@ private fun DebugPanel(demo: DemoControls, onClose: () -> Unit) {
         Section("장면") {
             Action("지각 알림") { demo.showLateNotice(); onClose() }
             Action("픽업 알림") { demo.showPickupApproach(); onClose() }
+            Action("픽업 도착") { demo.arriveAtPickup(); onClose() }
             Action("팝업 닫기") { demo.closePopups() }
             Action("처음 화면") { demo.goHome(); onClose() }
         }

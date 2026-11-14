@@ -11,6 +11,10 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.navArgument
 import com.example.carproject.ui.leave.ChargeRouteScreen
+import com.example.carproject.ui.pickup.PickupDepartScreen
+import com.example.carproject.ui.pickup.PickupDepartViewModel
+import com.example.carproject.ui.pickup.PickupWaitScreen
+import com.example.carproject.ui.pickup.PickupWaitViewModel
 import com.example.carproject.ui.leave.ChargeRouteViewModel
 import com.example.carproject.ui.leave.LeaveNext
 import com.example.carproject.ui.leave.OffModeScreen
@@ -48,6 +52,8 @@ object Routes {
     const val PARK_SAVED = "park_saved"
     const val ARRIVAL = "arrival"
     const val OFF_MODE = "off_mode"
+    const val PICKUP_WAIT = "pickup_wait"
+    const val PICKUP_DEPART = "pickup_depart"
     const val CHARGE_ROUTE = "charge_route"
     const val PICKUP_OFFER = "pickup_offer"
     const val PICKUP_DETAIL = "pickup_detail/{${PickupDetailViewModel.ARG_STORE_ID}}"
@@ -69,6 +75,7 @@ fun AppNavHost(container: AppContainer) {
             when (request) {
                 is ScreenRequest.ParkAsk -> nav.navigate(Routes.parkAsk(request.place)) { launchSingleTop = true }
                 is ScreenRequest.Briefing -> nav.navigate(Routes.briefing(request.place))
+                ScreenRequest.PickupWait -> nav.navigate(Routes.PICKUP_WAIT) { launchSingleTop = true }
                 ScreenRequest.Home -> nav.navigate(Routes.HOME) {
                     popUpTo(nav.graph.id) { inclusive = true }
                     launchSingleTop = true
@@ -165,6 +172,23 @@ fun AppNavHost(container: AppContainer) {
                     viewModel = viewModel(factory = PickupDetailViewModel.factory(container)),
                     onBack = { nav.popBackStack() },
                     onDeparted = { nav.navigate(Routes.HOME) { popUpTo(Routes.HOME) } },
+                )
+            }
+        }
+        composable(Routes.PICKUP_WAIT) {
+            Screen(tripMode) {
+                PickupWaitScreen(
+                    viewModel = viewModel(factory = PickupWaitViewModel.factory(container)),
+                    onBack = { nav.navigate(Routes.PICKUP_DEPART) },
+                )
+            }
+        }
+        composable(Routes.PICKUP_DEPART) {
+            Screen(tripMode) {
+                PickupDepartScreen(
+                    viewModel = viewModel(factory = PickupDepartViewModel.factory(container)),
+                    // 내비가 다시 앞으로 나온다. 앱은 처음 화면으로 돌려 둔다.
+                    onDone = { nav.navigate(Routes.HOME) { popUpTo(Routes.HOME) } },
                 )
             }
         }

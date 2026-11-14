@@ -29,6 +29,12 @@ class ParkingWatcher(
     }
 
     private fun onParked() {
+        // 퇴근길 예약한 가게 앞이면 주차 위치 대신 히터를 켜 둘지 묻는다(16).
+        if (driving.arriveAtPickupIfPending()) {
+            Log.i(TAG, "P로 바뀜 → 픽업 가게 앞")
+            router.open(ScreenRequest.PickupWait)
+            return
+        }
         val place = driving.destination
             ?: if (driving.mode.value == CommuteMode.Evening) places.home() else places.workplace()
         Log.i(TAG, "P로 바뀜 → 주차 위치 묻기: ${place.name}")

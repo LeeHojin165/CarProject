@@ -18,4 +18,7 @@ sealed interface RouteResult {
 interface NavigationRepository {
     /** 목적지로 길안내를 시작한다. waypoints는 최대 2곳(Pleos 제한), 들르는 순서대로. */
     suspend fun startRoute(place: Place, waypoints: List<Place> = emptyList()): RouteResult
+
+    /** 이미 안내 중인 내비 화면을 앞으로 불러온다. */
+    suspend fun showNavigation()
 }

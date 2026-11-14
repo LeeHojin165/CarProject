@@ -43,6 +43,10 @@ enum class AppIcon(vararg val paths: String) {
     CheckCircle(circle(12f, 12f, 9f), "M8 12.3l2.8 2.8L16 9.5"),
     Back("M15 5l-7 7 7 7"),
     Image(rect(3f, 5f, 18f, 14f, 2.5f), circle(8.5f, 10f, 1.6f), "M21 16l-5-5-9 8"),
+    Thermometer("M10 13.5V5a2 2 0 0 1 4 0v8.5a4 4 0 1 1-4 0z"),
+    SeatHeat("M5 20v-6a3 3 0 0 1 3-3h5l4 4v5", "M9 4c-1 1.3 1 2.2 0 3.5M13 4c-1 1.3 1 2.2 0 3.5"),
+    Timer(circle(12f, 13f, 8f), "M12 9v4l2.5 2M10 2h4"),
+    Leaf("M12 21v-8", "M12 13c0-4 2.5-7 7-7 0 4.5-3 7-7 7z", "M12 15c0-3-2-5.5-6-5.5 0 3.5 2.5 5.5 6 5.5z"),
     Building("M3 21V9l6-4v16M9 21h12V11l-6-3", "M13 13h4M13 17h4"),
 }
 

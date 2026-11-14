@@ -81,11 +81,48 @@ class DrivingAssistant(
     var reservation: Reservation? = null
         private set
 
+    /** 픽업 진행: 가게 앞에 세우면 AtStore, 받아 오면 PickedUp. */
+    enum class PickupStage { None, AtStore, PickedUp }
+
+    var pickupStage = PickupStage.None
+        private set
+
+    /** 오늘 구한 음식(kg). 마이페이지 기록에 더한다. */
+    var savedFoodKgToday = 0.0
+        private set
+
+    /** 기어 P: 예약한 가게 앞에 처음 세운 것이면 true(16을 띄운다). */
+    fun arriveAtPickupIfPending(): Boolean {
+        if (_mode.value != CommuteMode.Evening || reservation == null || pickupStage != PickupStage.None) return false
+        pickupStage = PickupStage.AtStore
+        // 가게 앞에 섰으니 "가게에 다가가면" 띄우려던 타이머(15)도 끈다.
+        driveJob?.cancel()
+        onDismiss()
+        return true
+    }
+
+    /** 시연용: 예약이 없으면 가짜 예약을 만들고 가게 앞에 선 것으로 한다. */
+    fun forceArriveAtPickup(fallback: Reservation) {
+        setMode(CommuteMode.Evening)
+        if (reservation == null) reservation = fallback
+        pickupStage = PickupStage.AtStore
+        driveJob?.cancel()
+        onDismiss()
+    }
+
+    /** 17까지 마쳤다. 받은 음식을 기록하고 집으로 남은 안내를 이어간다. */
+    suspend fun finishPickup() {
+        pickupStage = PickupStage.PickedUp
+        reservation?.let { savedFoodKgToday += it.store.weightKg }
+        navigation.showNavigation()
+    }
+
     /** 01 "퇴근이에요": 퇴근 모드로 바꾸고 지난 퇴근 계획을 비운다. */
     fun beginLeaveWork() {
         setMode(CommuteMode.Evening)
         charger = null
         reservation = null
+        pickupStage = PickupStage.None
     }
 
     fun chooseCharger(station: ChargingStation?) {
@@ -122,7 +159,7 @@ class DrivingAssistant(
                 // 출근길: 가짜 교통 정보로 잠시 뒤 지각 여부를 판단한다.
                 delay(LATE_CHECK_DELAY_MS)
                 showLateNotice(FAKE_DELAY_MINUTES)
-            } else if (reservation != null) {
+            } else if (reservation != null && pickupStage == PickupStage.None) {
                 // 퇴근길: 예약한 가게에 가까워지면 알린다(시연용으로 잠시 뒤).
                 delay(PICKUP_APPROACH_DELAY_MS)
                 showPickupApproach()
