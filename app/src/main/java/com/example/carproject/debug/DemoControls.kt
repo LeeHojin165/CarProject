@@ -1,7 +1,6 @@
 package com.example.carproject.debug
 
 import android.util.Log
-import java.time.LocalTime
 import com.example.carproject.data.AppClock
 import com.example.carproject.data.fake.FakeCalendarRepository
 import com.example.carproject.data.fake.FakeMessageRepository
@@ -71,7 +70,7 @@ class DemoControls(
     fun setGear(gear: Gear) {
         // 주행(D)하다 P로 바꾸면 도착한 것으로 보고 시계를 도착 시각으로 옮긴다(출근 08:47, 퇴근 18:44).
         if (gear == Gear.P && gears.gear.value != Gear.P) {
-            AppClock.setTo(if (driving.mode.value == CommuteMode.Evening) LocalTime.of(18, 44) else LocalTime.of(8, 47))
+            AppClock.setTo(driving.demoArrivalTime())
         }
         gears.overrideForDemo(gear)
     }

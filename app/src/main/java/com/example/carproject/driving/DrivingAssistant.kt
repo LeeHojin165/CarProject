@@ -79,7 +79,24 @@ class DrivingAssistant(
     }
 
     /** 오늘 이번 길의 거리·시간. 실제 운행 기록이 없어서 가짜 값이다. */
-    fun tripSummary(): String = if (_mode.value == CommuteMode.Evening) "18.6km · 44분" else "18.4km · 35분"
+    fun tripSummary(): String = when {
+        tripKind == TripKind.Business -> "43km · 53분"
+        _mode.value == CommuteMode.Evening -> "18.6km · 44분"
+        else -> "18.4km · 35분"
+    }
+
+    /** 이번 길 이름(도착 확인 화면 카드). */
+    fun tripLabel(): String = when {
+        tripKind == TripKind.Business -> "오늘 출장길"
+        _mode.value == CommuteMode.Evening -> "오늘 퇴근길"
+        else -> "오늘 출근길"
+    }
+
+    /** 시연용: 출발 시각(08:12 / 18:00)에 이번 길 소요 시간을 더한 도착 시각. */
+    fun demoArrivalTime(): LocalTime = when {
+        _mode.value == CommuteMode.Evening -> AppClock.EVENING.plusMinutes(44)
+        else -> AppClock.MORNING.plusMinutes(places.estimatedMinutes(destination ?: places.workplace()) + 1L)
+    }
 
     /** 퇴근길에 들를 충전소(12에서 고름). */
     var charger: ChargingStation? = null

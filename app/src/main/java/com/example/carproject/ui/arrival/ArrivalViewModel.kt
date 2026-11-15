@@ -123,7 +123,7 @@ class ArrivalViewModel(
             issue = issue,
             closing = closingNow,
             checks = checks,
-            tripLabel = if (evening) "오늘 퇴근길" else "오늘 출근길",
+            tripLabel = driving.tripLabel(),
             tripSummary = driving.tripSummary(),
         )
     }
