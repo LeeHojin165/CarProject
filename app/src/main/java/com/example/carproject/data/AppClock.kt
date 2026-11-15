@@ -2,6 +2,8 @@ package com.example.carproject.data
 
 import android.os.SystemClock
 import android.util.Log
+import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalTime
 
 /**
@@ -18,6 +20,16 @@ object AppClock {
 
     fun now(): LocalTime =
         base.plusSeconds((SystemClock.elapsedRealtime() - setAtMs) / 1000).withNano(0)
+
+    /** 오늘 날짜. 주말에 촬영해도 출퇴근 장면이 자연스럽게, 주말이면 직전 금요일로 본다. */
+    fun today(): LocalDate {
+        val d = LocalDate.now()
+        return when (d.dayOfWeek) {
+            DayOfWeek.SATURDAY -> d.minusDays(1)
+            DayOfWeek.SUNDAY -> d.minusDays(2)
+            else -> d
+        }
+    }
 
     fun setTo(time: LocalTime) {
         Log.i("AppClock", "시각: $time")

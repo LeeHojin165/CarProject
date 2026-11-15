@@ -23,7 +23,10 @@ class FakeOffModeRepository : OffModeRepository {
 
     override fun tomorrow() = TomorrowPreview("주간 회의", LocalTime.of(10, 0), pendingTasks = 2)
 
-    override fun tomorrowRoundTripKm() = 48
+    // 출근길 18.4km 왕복 ≈ 37km, 퇴근길 18.6km ≈ 19km (DrivingAssistant.tripSummary와 맞춤)
+    override fun tomorrowRoundTripKm() = 37
+
+    override fun homeKm() = 19
 
     override suspend fun apply(): Boolean {
         Log.i("FakeSlack", "상태: 퇴근했어요, 방해 금지: 내일 09:00까지")

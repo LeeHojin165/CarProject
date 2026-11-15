@@ -79,7 +79,7 @@ class DrivingAssistant(
     }
 
     /** 오늘 이번 길의 거리·시간. 실제 운행 기록이 없어서 가짜 값이다. */
-    fun tripSummary(): String = if (_mode.value == CommuteMode.Evening) "18.6km · 44분" else "18.4km · 41분"
+    fun tripSummary(): String = if (_mode.value == CommuteMode.Evening) "18.6km · 44분" else "18.4km · 35분"
 
     /** 퇴근길에 들를 충전소(12에서 고름). */
     var charger: ChargingStation? = null
@@ -188,11 +188,15 @@ class DrivingAssistant(
     private var driveJob: Job? = null
     private var popupJob: Job? = null
 
+    /** 시연 녹화용: 켜면 출발 후 저절로 뜨는 지각·픽업 팝업을 막고, 시연 메뉴로만 띄운다. */
+    @Volatile var manualPopupsOnly = false
+
     /** 길안내가 시작됐다. 가짜 교통 정보로 잠시 뒤 지각 여부를 판단한다. */
     fun onRouteStarted(place: Place) {
         Log.i(TAG, "주행 시작: ${place.name}")
         destination = place
         driveJob?.cancel()
+        if (manualPopupsOnly) return
         driveJob = scope.launch {
             if (_mode.value == CommuteMode.Morning && tripKind == TripKind.Commute && settings.proactive.value.lateAlert) {
                 // 출근길: 가짜 교통 정보로 잠시 뒤 지각 여부를 판단한다.

@@ -236,9 +236,7 @@ class HomeViewModel(
     }
 
     private fun toUiState(v: VehicleStatus, d: HomeDialog): HomeUiState {
-        // 촬영 날짜가 주말이어도 출근 장면이 어색하지 않게, 주말이면 평일로 말한다.
-        val today = LocalDate.now().dayOfWeek
-        val weekday = if (today.value >= 6) "평일" else today.getDisplayName(TextStyle.FULL, Locale.KOREAN)
+        val weekday = AppClock.today().dayOfWeek.getDisplayName(TextStyle.FULL, Locale.KOREAN)
         val energy = when {
             v.evBatteryPercent != null -> CheckItem(AppIcon.Battery, "배터리", "${v.evBatteryPercent}% · ${v.rangeKm}km")
             else -> CheckItem(AppIcon.Drop, "연료", "${v.fuelPercent ?: 0}% · ${v.rangeKm}km")

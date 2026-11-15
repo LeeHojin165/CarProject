@@ -35,6 +35,8 @@ class DemoCommandReceiver : BroadcastReceiver() {
         intent.getStringExtra("battery")?.let { demo.setBatteryLow(it == "low") }
         intent.getStringExtra("window")?.let { demo.setPassengerWindowOpen(it == "open") }
         if (intent.getStringExtra("login") == "phone") demo.phoneLogin()
+        intent.getStringExtra("ventilate")?.let { demo.setVentilateAsk(it == "on") }
+        intent.getStringExtra("auto")?.let { demo.setManualPopupsOnly(it == "off") }
         intent.getStringExtra("mic")?.let { demo.setScriptOnlyMic(it == "script") }
         intent.getStringExtra("say")?.let(demo::sayNext)
         intent.getStringExtra("temp")?.let { demo.setOutsideCold(it == "cold") }

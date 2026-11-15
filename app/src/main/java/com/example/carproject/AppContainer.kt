@@ -93,5 +93,5 @@ class AppContainer(context: Context) {
     val recordRepository: RecordRepository = FakeRecordRepository()
     val screenRouter = ScreenRouter(context)
     val parkingWatcher = ParkingWatcher(appScope, gearRepository, drivingAssistant, placeRepository, screenRouter, settingsRepository)
-    val demoControls = DemoControls(gearRepository, fakeVehicle, drivingAssistant, screenRouter, pickupRepository, fakeCalendar, fakeMessages, fallbackSpeech, fakeAuth)
+    val demoControls = DemoControls(gearRepository, fakeVehicle, drivingAssistant, screenRouter, pickupRepository, fakeCalendar, fakeMessages, fallbackSpeech, fakeAuth, settingsRepository)
 }

@@ -99,7 +99,7 @@ class OffModeViewModel(
 
     /** 내일 왕복하고 20km도 안 남으면 충전을 먼저 권한다. */
     private fun decideNext(): LeaveNext {
-        val left = vehicle.status.value.rangeKm - offMode.tomorrowRoundTripKm()
+        val left = vehicle.status.value.rangeKm - offMode.homeKm() - offMode.tomorrowRoundTripKm()
         return if (left < CHARGE_MARGIN_KM) LeaveNext.Charge else LeaveNext.Pickup
     }
 
