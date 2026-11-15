@@ -25,8 +25,17 @@ class ParkingWatcher(
             var previous: Gear? = null
             gears.gear.collect { gear ->
                 if (previous != null && previous != Gear.P && gear == Gear.P) onParked()
+                if (previous == Gear.P && gear != Gear.P) onDriveOff()
                 previous = gear
             }
+        }
+    }
+
+    /** 픽업 가게 앞에서 다시 출발하면(P → D) 환기를 묻는다(17). "다녀왔어요"를 누르지 않아도 된다. */
+    private fun onDriveOff() {
+        if (driving.pickupStage == DrivingAssistant.PickupStage.AtStore && settings.proactive.value.ventilate) {
+            Log.i(TAG, "픽업 가게 앞에서 출발 → 환기 묻기")
+            router.open(ScreenRequest.PickupDepart)
         }
     }
 

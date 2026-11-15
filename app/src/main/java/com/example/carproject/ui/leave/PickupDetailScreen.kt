@@ -1,5 +1,6 @@
 package com.example.carproject.ui.leave
 
+import com.example.carproject.data.AppClock
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -81,7 +82,7 @@ class PickupDetailViewModel(
 
     private fun build(): PickupDetailUiState {
         // 회사에서 가게까지 가짜 소요시간: 경로 위라 12분 + 돌아가는 시간.
-        val arrival = LocalTime.now().plusMinutes(12L + store.detourMinutes)
+        val arrival = AppClock.now().plusMinutes(12L + store.detourMinutes)
         val ok = !arrival.isAfter(store.pickupEnd)
         val note = when {
             !ok -> "픽업 시간이 지나요"

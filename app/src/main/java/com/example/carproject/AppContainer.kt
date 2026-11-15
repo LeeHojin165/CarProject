@@ -58,14 +58,18 @@ class AppContainer(context: Context) {
 
     val fakeVehicle = FakeVehicleRepository()
     val vehicleRepository: VehicleRepository = fakeVehicle
-    val authRepository: AuthRepository = FakeAuthRepository()
+    val fakeAuth = FakeAuthRepository()
+    val authRepository: AuthRepository = fakeAuth
     val placeRepository: PlaceRepository = FakePlaceRepository()
-    val calendarRepository: CalendarRepository = FakeCalendarRepository()
-    val messageRepository: MessageRepository = FakeMessageRepository()
-    val speechRepository: SpeechRepository = FallbackSpeechRepository(
+    val fakeCalendar = FakeCalendarRepository()
+    val calendarRepository: CalendarRepository = fakeCalendar
+    val fakeMessages = FakeMessageRepository()
+    val messageRepository: MessageRepository = fakeMessages
+    val fallbackSpeech = FallbackSpeechRepository(
         pleos = PleosSpeechRepository(context),
         fake = FakeSpeechRepository(),
     )
+    val speechRepository: SpeechRepository = fallbackSpeech
     val voiceRepository: VoiceRepository = FallbackVoiceRepository(
         pleos = PleosVoiceRepository(context),
         fake = FakeVoiceRepository(),
@@ -89,5 +93,5 @@ class AppContainer(context: Context) {
     val recordRepository: RecordRepository = FakeRecordRepository()
     val screenRouter = ScreenRouter(context)
     val parkingWatcher = ParkingWatcher(appScope, gearRepository, drivingAssistant, placeRepository, screenRouter, settingsRepository)
-    val demoControls = DemoControls(gearRepository, fakeVehicle, drivingAssistant, screenRouter, pickupRepository)
+    val demoControls = DemoControls(gearRepository, fakeVehicle, drivingAssistant, screenRouter, pickupRepository, fakeCalendar, fakeMessages, fallbackSpeech, fakeAuth, settingsRepository)
 }

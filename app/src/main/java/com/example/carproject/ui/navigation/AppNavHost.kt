@@ -94,6 +94,14 @@ fun AppNavHost(container: AppContainer) {
                 ScreenRequest.PickupWait -> nav.navigate(Routes.PICKUP_WAIT) { launchSingleTop = true }
                 ScreenRequest.PickupDepart -> nav.navigate(Routes.PICKUP_DEPART) { launchSingleTop = true }
                 ScreenRequest.TripLog -> nav.navigate(Routes.TRIP_LOG) { launchSingleTop = true }
+                ScreenRequest.OffMode -> nav.navigate(Routes.OFF_MODE) {
+                    popUpTo(Routes.HOME)
+                    launchSingleTop = true
+                }
+                ScreenRequest.Login -> nav.navigate(Routes.LOGIN) {
+                    popUpTo(nav.graph.id) { inclusive = true }
+                    launchSingleTop = true
+                }
                 ScreenRequest.Home -> nav.navigate(Routes.HOME) {
                     popUpTo(nav.graph.id) { inclusive = true }
                     launchSingleTop = true
@@ -113,6 +121,7 @@ fun AppNavHost(container: AppContainer) {
             }
         }
         composable(Routes.HOME) {
+            val homeGear by container.gearRepository.gear.collectAsStateWithLifecycle()
             Screen(CommuteMode.Morning) {
                 HomeScreen(
                     viewModel = viewModel(factory = HomeViewModel.factory(container)),
@@ -120,6 +129,7 @@ fun AppNavHost(container: AppContainer) {
                     onLeaveWork = { nav.navigate(Routes.OFF_MODE) },
                     onTripChosen = { place -> nav.navigate(Routes.trip(place)) },
                     onOpenMyPage = { nav.navigate(Routes.MY_PAGE) },
+                    parked = homeGear == com.example.carproject.data.model.Gear.P,
                 )
             }
         }
@@ -242,6 +252,11 @@ fun AppNavHost(container: AppContainer) {
             }
         }
         composable(Routes.MY_PAGE) {
+            // 주행 중 잠금: 기어가 P가 아니면 마이페이지를 닫는다(홈 상태 칩이 "주차 중에만 열려요"를 보여 준다).
+            val myPageGear by container.gearRepository.gear.collectAsStateWithLifecycle()
+            LaunchedEffect(myPageGear) {
+                if (myPageGear != com.example.carproject.data.model.Gear.P) nav.popBackStack(Routes.MY_PAGE, inclusive = true)
+            }
             Screen(CommuteMode.Morning) {
                 MyPageScreen(
                     viewModel = viewModel(factory = MyPageViewModel.factory(container)),

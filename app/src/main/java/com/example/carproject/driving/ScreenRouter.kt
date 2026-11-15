@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.receiveAsFlow
 sealed interface ScreenRequest {
     data class ParkAsk(val place: Place) : ScreenRequest
     data object Home : ScreenRequest
+    data object Login : ScreenRequest
+    data object OffMode : ScreenRequest
     data object PickupWait : ScreenRequest
     data object PickupDepart : ScreenRequest
     data object TripLog : ScreenRequest

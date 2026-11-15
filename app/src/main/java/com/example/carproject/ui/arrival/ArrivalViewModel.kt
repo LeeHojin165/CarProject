@@ -1,5 +1,6 @@
 package com.example.carproject.ui.arrival
 
+import com.example.carproject.data.AppClock
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
@@ -122,14 +123,14 @@ class ArrivalViewModel(
             issue = issue,
             closing = closingNow,
             checks = checks,
-            tripLabel = if (evening) "오늘 퇴근길" else "오늘 출근길",
+            tripLabel = driving.tripLabel(),
             tripSummary = driving.tripSummary(),
         )
     }
 
     /** "9시 주간 회의까지 12분 남았어요." */
     private fun nextEventText(): String? {
-        val now = LocalTime.now()
+        val now = AppClock.now()
         val next = calendar.todayEvents().sortedBy { it.time }.firstOrNull { it.time.isAfter(now) } ?: return null
         val minutes = Duration.between(now, next.time).toMinutes()
         return "${BriefingViewModel.koreanTime(next.time)} ${next.title}까지 ${minutes}분 남았어요."

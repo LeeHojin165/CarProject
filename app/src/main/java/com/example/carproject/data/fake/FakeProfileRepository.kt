@@ -1,5 +1,6 @@
 package com.example.carproject.data.fake
 
+import com.example.carproject.data.AppClock
 import android.util.Log
 import com.example.carproject.data.model.CommuteSettings
 import com.example.carproject.data.model.CorporateCarInfo
@@ -49,34 +50,49 @@ class FakeSettingsRepository : SettingsRepository {
     )
 }
 
-/** 21·25의 이번 달 숫자. 실제 기록이 쌓이기 전이라 디자인 값을 쓰고, 오늘 한 일만 더한다. */
+/**
+ * 21·25의 이번 달 숫자. 실제 기록이 쌓이기 전이라 가짜 값이고, 오늘 한 일만 더한다.
+ * 촬영 날짜와 맞도록 이번 달 1일부터 어제까지의 평일 수로 출퇴근 횟수를 정한다.
+ */
 class FakeRecordRepository : RecordRepository {
-    override fun thisMonth() = MonthlyRecord(
-        month = LocalDate.now().monthValue, trips = 38, totalKm = 812,
-        commuteToWork = 19, commuteToHome = 19,
+    /** 이번 달 1일부터 어제까지 평일 수(최소 1). */
+    private fun workdaysSoFar(): Int {
+        val today = AppClock.today()
+        return generateSequence(today.withDayOfMonth(1)) { it.plusDays(1) }
+            .takeWhile { it.isBefore(today) }
+            .count { it.dayOfWeek.value <= 5 }
+            .coerceAtLeast(1)
+    }
+
+    override fun thisMonth() = workdaysSoFar().let { n -> MonthlyRecord(
+        // 하루 왕복: 출근 18.4km + 퇴근 18.6km ≈ 37km
+        month = AppClock.today().monthValue, trips = n * 2, totalKm = n * 37,
+        commuteToWork = n, commuteToHome = n,
         avgCommuteMinutes = 34, avgCommuteDeltaMinutes = -3,
-        onTime = 16, lateNoticesSent = 3,
+        onTime = (n - 1).coerceAtLeast(0), lateNoticesSent = 1,
         savedFoodKg = 4.8, savedWon = 32_400,
-    )
+    ) }
 
     override fun recentPickups() = listOf(
-        PickupHistory(LocalDate.now().minusDays(1), "[빵집 이름]", "마감 빵 묶음 · 픽업 1234", 1.2),
-        PickupHistory(LocalDate.now().minusDays(3), "[반찬가게 이름]", "반찬 3종 세트", 0.9),
-        PickupHistory(LocalDate.now().minusDays(8), "[샐러드 가게 이름]", "샐러드 2팩", 0.6),
+        PickupHistory(AppClock.today().minusDays(1), "[빵집 이름]", "마감 빵 묶음 · 픽업 1234", 1.2),
+        PickupHistory(AppClock.today().minusDays(3), "[반찬가게 이름]", "반찬 3종 세트", 0.9),
+        PickupHistory(AppClock.today().minusDays(8), "[샐러드 가게 이름]", "샐러드 2팩", 0.6),
     )
 
     override fun corporateCar() = CorporateCarInfo(
         companyName = "[회사 이름]", businessNumber = "[000-00-00000]",
         carModel = "[차종]", plateNumber = "[00가 0000]", fuelPriceSource = "지역 평균 유가",
-        monthCommuteKm = 520, monthBusinessKm = 292, monthTotalKm = 870,
+        // 이번 달 출퇴근 거리(21과 같은 값) + 일반 업무용(출장). 개인 사용 58km를 더해 총 주행.
+        monthCommuteKm = thisMonth().totalKm, monthBusinessKm = 84,
+        monthTotalKm = thisMonth().totalKm + 84 + 58,
     )
 }
 
 class FakeTripLogRepository : TripLogRepository {
     private val saved = mutableListOf(
-        TripLogEntry(LocalDate.now().minusDays(1), "집 → 회사", true, "[부서] · [이름]", 32_376, 32_397, "출퇴근", 3_000),
-        TripLogEntry(LocalDate.now().minusDays(2), "회사 → 집", true, "[부서] · [이름]", 32_353, 32_376, "출퇴근", 3_300),
-        TripLogEntry(LocalDate.now().minusDays(4), "회사 → [협력사 B]", false, "[부서] · [이름]", 32_312, 32_353, "협력사 회의", 5_800),
+        TripLogEntry(AppClock.today().minusDays(1), "집 → 회사", true, "[부서] · [이름]", 32_381, 32_399, "출퇴근", 2_600),
+        TripLogEntry(AppClock.today().minusDays(2), "회사 → 집", true, "[부서] · [이름]", 32_362, 32_381, "출퇴근", 2_700),
+        TripLogEntry(AppClock.today().minusDays(4), "회사 → [협력사 B]", false, "[부서] · [이름]", 32_321, 32_362, "협력사 회의", 5_800),
     )
 
     override fun fuelPricePerLiter() = 1_700

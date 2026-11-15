@@ -1,5 +1,6 @@
 package com.example.carproject.ui.home
 
+import com.example.carproject.data.AppClock
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
@@ -115,7 +116,7 @@ class HomeViewModel(
     fun showConfirmWork() {
         stopListening()
         val work = places.workplace()
-        val arrival = LocalTime.now().plusMinutes(places.estimatedMinutes(work).toLong())
+        val arrival = AppClock.now().plusMinutes(places.estimatedMinutes(work).toLong())
         dialog.value = HomeDialog.ConfirmWork(work, "${arrival.hour}시 ${arrival.minute}분")
     }
 
@@ -159,7 +160,7 @@ class HomeViewModel(
     /** "출장 가요" → 어디로 가는지 묻는다(18). 일정에 회사 밖 미팅이 있으면 먼저 제안한다. */
     fun onBusinessTripClick() {
         stopSpeaking()
-        val now = LocalTime.now()
+        val now = AppClock.now()
         val event = calendar.todayEvents().sortedBy { it.time }.firstOrNull { it.outside && it.place != null && it.time.isAfter(now) }
             ?: calendar.todayEvents().firstOrNull { it.outside && it.place != null }
         val suggestion = event?.let { e ->
@@ -228,14 +229,15 @@ class HomeViewModel(
     private fun resolvePlace(text: String, recent: List<RecentPlace>): Place {
         val bare = { s: String -> s.replace("[", "").replace("]", "").replace(" ", "") }
         recent.firstOrNull { bare(text).contains(bare(it.place.name)) }?.let { return it.place }
-        val name = text.trim()
-            .removeSuffix("가줘").removeSuffix("가 줘").removeSuffix("안내해줘").trim()
-            .removeSuffix("으로").removeSuffix("로").trim()
+        // 말끝이 잘리거나 달라도("으로 가", "로 가자", "가주세요", "안내해 줘") 장소 이름만 남긴다.
+        val name = text.trim().trimEnd('.', '!', '?')
+            .replace(Regex("\\s*(가\\s*줘|가\\s*주세요|가자|가|안내해\\s*줘|안내해\\s*주세요|안내해)$"), "").trim()
+            .replace(Regex("(으로|로)$"), "").trim()
         return Place(name = name.ifBlank { text }, address = "")
     }
 
     private fun toUiState(v: VehicleStatus, d: HomeDialog): HomeUiState {
-        val weekday = LocalDate.now().dayOfWeek.getDisplayName(TextStyle.FULL, Locale.KOREAN)
+        val weekday = AppClock.today().dayOfWeek.getDisplayName(TextStyle.FULL, Locale.KOREAN)
         val energy = when {
             v.evBatteryPercent != null -> CheckItem(AppIcon.Battery, "배터리", "${v.evBatteryPercent}% · ${v.rangeKm}km")
             else -> CheckItem(AppIcon.Drop, "연료", "${v.fuelPercent ?: 0}% · ${v.rangeKm}km")

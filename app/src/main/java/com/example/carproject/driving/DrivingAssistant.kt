@@ -1,5 +1,6 @@
 package com.example.carproject.driving
 
+import com.example.carproject.data.AppClock
 import android.util.Log
 import com.example.carproject.data.model.CalendarEvent
 import com.example.carproject.data.model.ChargingStation
@@ -69,12 +70,33 @@ class DrivingAssistant(
     fun setMode(mode: CommuteMode) {
         Log.i(TAG, "모드: $mode")
         // 출근↔퇴근이 바뀌면 이전 길의 목적지는 더 이상 맞지 않는다(퇴근인데 "회사 도착"이 뜨지 않게).
-        if (_mode.value != mode) destination = null
+        if (_mode.value != mode) {
+            destination = null
+            // 시연 시각도 함께 바꾼다: 출근 08:12, 퇴근 18:00.
+            AppClock.setTo(if (mode == CommuteMode.Evening) AppClock.EVENING else AppClock.MORNING)
+        }
         _mode.value = mode
     }
 
     /** 오늘 이번 길의 거리·시간. 실제 운행 기록이 없어서 가짜 값이다. */
-    fun tripSummary(): String = if (_mode.value == CommuteMode.Evening) "18.6km · 44분" else "18.4km · 41분"
+    fun tripSummary(): String = when {
+        tripKind == TripKind.Business -> "43km · 53분"
+        _mode.value == CommuteMode.Evening -> "18.6km · 44분"
+        else -> "18.4km · 35분"
+    }
+
+    /** 이번 길 이름(도착 확인 화면 카드). */
+    fun tripLabel(): String = when {
+        tripKind == TripKind.Business -> "오늘 출장길"
+        _mode.value == CommuteMode.Evening -> "오늘 퇴근길"
+        else -> "오늘 출근길"
+    }
+
+    /** 시연용: 출발 시각(08:12 / 18:00)에 이번 길 소요 시간을 더한 도착 시각. */
+    fun demoArrivalTime(): LocalTime = when {
+        _mode.value == CommuteMode.Evening -> AppClock.EVENING.plusMinutes(44)
+        else -> AppClock.MORNING.plusMinutes(places.estimatedMinutes(destination ?: places.workplace()) + 1L)
+    }
 
     /** 퇴근길에 들를 충전소(12에서 고름). */
     var charger: ChargingStation? = null
@@ -183,16 +205,20 @@ class DrivingAssistant(
     private var driveJob: Job? = null
     private var popupJob: Job? = null
 
+    /** 시연 녹화용: 켜면 출발 후 저절로 뜨는 지각·픽업 팝업을 막고, 시연 메뉴로만 띄운다. */
+    @Volatile var manualPopupsOnly = false
+
     /** 길안내가 시작됐다. 가짜 교통 정보로 잠시 뒤 지각 여부를 판단한다. */
     fun onRouteStarted(place: Place) {
         Log.i(TAG, "주행 시작: ${place.name}")
         destination = place
         driveJob?.cancel()
+        if (manualPopupsOnly) return
         driveJob = scope.launch {
             if (_mode.value == CommuteMode.Morning && tripKind == TripKind.Commute && settings.proactive.value.lateAlert) {
                 // 출근길: 가짜 교통 정보로 잠시 뒤 지각 여부를 판단한다.
                 delay(LATE_CHECK_DELAY_MS)
-                showLateNotice(FAKE_DELAY_MINUTES)
+                showLateNotice(TRAFFIC_DELAY_MINUTES)
             } else if (reservation != null && pickupStage == PickupStage.None) {
                 // 퇴근길: 예약한 가게에 가까워지면 알린다(시연용으로 잠시 뒤).
                 delay(PICKUP_APPROACH_DELAY_MS)
@@ -202,10 +228,13 @@ class DrivingAssistant(
     }
 
     /** 시연용: 지각 알림을 바로 띄운다. */
-    fun showLateNotice(lateMinutes: Int = FAKE_DELAY_MINUTES) {
-        val next = calendar.todayEvents().sortedBy { it.time }.firstOrNull { it.time.isAfter(LocalTime.now()) }
+    fun showLateNotice(trafficMinutes: Int = TRAFFIC_DELAY_MINUTES) {
+        val next = calendar.todayEvents().sortedBy { it.time }.firstOrNull { it.time.isAfter(AppClock.now()) }
             ?: calendar.todayEvents().first()
-        val arrival = next.time.plusMinutes(lateMinutes.toLong())
+        // 08:12 출발 기준 원래 도착 예정(회사 34분 → 8:46)에 정체 시간을 더한다. 8:46 + 22분 = 9:08 → 9시 회의에 8분 늦음.
+        val place = destination ?: places.workplace()
+        val arrival = AppClock.MORNING.plusMinutes(places.estimatedMinutes(place).toLong() + trafficMinutes)
+        val lateMinutes = java.time.Duration.between(next.time, arrival).toMinutes().toInt().coerceAtLeast(1)
         val notice = DrivingPopup.LateNotice(
             lateMinutes = lateMinutes,
             channel = messages.teamChannel(),
@@ -227,14 +256,14 @@ class DrivingAssistant(
     }
 
     /** 15: 예약한 가게 300m 앞. 예약이 없으면(시연 메뉴) 첫 가게로 가짜 예약을 만든다. */
-    fun showPickupApproach(fallback: Reservation? = null) {
+    fun showPickupApproach(fallback: Reservation? = null, meters: Int = 300) {
         val r = reservation ?: fallback ?: return
-        val popup = DrivingPopup.PickupApproach(r, "300m")
+        val popup = DrivingPopup.PickupApproach(r, "${meters}m")
         _popup.value = popup
         popupJob?.cancel()
         popupJob = scope.launch {
             val kind = r.store.place.name.replace("[", "").replace("]", "")
-            voice.speak("300미터 앞 ${r.store.side}, 예약한 ${kind}이에요. 픽업 번호는 ${r.pickupNumber.toList().joinToString(" ")}이에요.")
+            voice.speak("${meters}미터 앞 ${r.store.side}, 예약한 ${kind}이에요. 픽업 번호는 ${r.pickupNumber.toList().joinToString(" ")}이에요.")
             delay(PICKUP_POPUP_SHOW_MS)
             if (_popup.value == popup) _popup.value = DrivingPopup.None
         }
@@ -286,7 +315,8 @@ class DrivingAssistant(
 
     private companion object {
         const val TAG = "DrivingAssistant"
-        const val FAKE_DELAY_MINUTES = 8
+        /** 가짜 교통 정보: 출근길 정체로 늘어난 시간(분). */
+        const val TRAFFIC_DELAY_MINUTES = 22
         const val LATE_CHECK_DELAY_MS = 6_000L
         const val NO_ANSWER_CLOSE_MS = 20_000L
         const val SENT_SHOW_MS = 4_000L

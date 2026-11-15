@@ -105,8 +105,8 @@ fun BriefingContent(
                         },
                         onDepart, Modifier.weight(1f),
                     )
-                    // 아이콘 + 글자 버튼
-                    Row(
+                    // 아이콘 + 글자 버튼. 읽을 멘션이 없으면 감춘다.
+                    if (state.mentions.isNotEmpty()) Row(
                         Modifier
                             .weight(1f)
                             .height(144.dp)

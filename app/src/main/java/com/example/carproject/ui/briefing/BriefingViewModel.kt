@@ -1,5 +1,6 @@
 package com.example.carproject.ui.briefing
 
+import com.example.carproject.data.AppClock
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -130,10 +131,10 @@ class BriefingViewModel(
         val isWork = place == places.workplace()
         val label = if (isWork) "회사" else place.name
         val minutes = places.estimatedMinutes(place)
-        val arrival = LocalTime.now().plusMinutes(minutes.toLong())
+        val arrival = AppClock.now().plusMinutes(minutes.toLong())
         val events = calendar.todayEvents().sortedBy { it.time }
         // 도착 전후로 가장 가까운 다음 일정. 이미 지난 일정은 건너뛴다.
-        val next = events.firstOrNull { it.time.isAfter(LocalTime.now()) }
+        val next = events.firstOrNull { it.time.isAfter(AppClock.now()) }
         return BriefingUiState(
             place = place,
             placeLabel = label,

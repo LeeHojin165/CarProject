@@ -41,8 +41,9 @@ import com.example.carproject.ui.theme.ds
 
 /** design/00_Login.html */
 @Composable
-fun LoginScreen(viewModel: LoginViewModel, onLater: () -> Unit) {
+fun LoginScreen(viewModel: LoginViewModel, onLater: () -> Unit, onLoggedIn: () -> Unit = onLater) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    androidx.compose.runtime.LaunchedEffect(state.isLoggedIn) { if (state.isLoggedIn) onLoggedIn() }
     LoginContent(state, onLater)
 }
 
@@ -66,7 +67,7 @@ fun LoginContent(state: LoginUiState, onLater: () -> Unit) {
                 )
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     listOf("휴대폰 카메라로 QR 찍기", "휴대폰에서 구글 계정으로 로그인", "Slack 연결하기")
-                        .forEachIndexed { i, label -> StepRow(i + 1, label, active = i == 0) }
+                        .forEachIndexed { i, label -> StepRow(i + 1, label, active = i == state.doneSteps, done = i < state.doneSteps) }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     LineIcon(AppIcon.Lock, 36.dp, Modifier.padding(top = 4.dp), color = c.textSub, strokeWidth = 2.2f)
@@ -90,7 +91,14 @@ fun LoginContent(state: LoginUiState, onLater: () -> Unit) {
                 QrPlaceholder()
                 Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
                     LineIcon(AppIcon.Waiting, 32.dp, color = c.accent, strokeWidth = 2.4f)
-                    Text("휴대폰에서 로그인하기를 기다리고 있어요", style = ds(30, 600, color = c.accent))
+                    Text(
+                        when (state.doneSteps) {
+                            0 -> "휴대폰에서 로그인하기를 기다리고 있어요"
+                            3 -> "Google · Slack 연결을 마쳤어요"
+                            else -> "휴대폰에서 연결하고 있어요"
+                        },
+                        style = ds(30, 600, color = c.accent),
+                    )
                 }
                 Column(
                     Modifier
@@ -117,7 +125,7 @@ fun LoginContent(state: LoginUiState, onLater: () -> Unit) {
 }
 
 @Composable
-private fun StepRow(number: Int, label: String, active: Boolean) {
+private fun StepRow(number: Int, label: String, active: Boolean, done: Boolean = false) {
     val c = appColors
     Column {
         if (number > 1) HorizontalDivider(thickness = 1.dp, color = c.divider)
@@ -127,12 +135,13 @@ private fun StepRow(number: Int, label: String, active: Boolean) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
-                Modifier.size(56.dp).clip(CircleShape).background(if (active) c.accent else c.subtle),
+                Modifier.size(56.dp).clip(CircleShape).background(if (active || done) c.accent else c.subtle),
                 contentAlignment = Alignment.Center,
             ) {
-                Text("$number", style = ds(28, 800, color = if (active) c.onAccent else c.text))
+                if (done) LineIcon(AppIcon.Check, 30.dp, color = c.onAccent, strokeWidth = 3f)
+                else Text("$number", style = ds(28, 800, color = if (active) c.onAccent else c.text))
             }
-            Text(label, style = ds(36, 600))
+            Text(label + if (done) " · 완료" else "", style = ds(36, 600, color = if (done) c.textSub else c.text))
         }
     }
 }

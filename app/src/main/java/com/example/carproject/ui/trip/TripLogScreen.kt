@@ -1,5 +1,6 @@
 package com.example.carproject.ui.trip
 
+import com.example.carproject.data.AppClock
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -99,7 +100,7 @@ class TripLogViewModel(
         _uiState = MutableStateFlow(
             TripLogUiState(
                 entry = TripLogEntry(
-                    date = LocalDate.now(),
+                    date = AppClock.today(),
                     route = "회사 → ${trip?.place?.name ?: "출장지"}",
                     commute = false,
                     user = "${p.department} · ${p.name}",

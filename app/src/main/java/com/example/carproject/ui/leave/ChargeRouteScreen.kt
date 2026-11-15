@@ -40,6 +40,7 @@ data class ChargeRouteUiState(
     val batteryPercent: Int,
     val rangeKm: Int,
     val roundTripKm: Int,
+    val homeKm: Int,
     val stations: List<ChargingStation>,
     val selected: Int = 0,
 )
@@ -55,7 +56,7 @@ class ChargeRouteViewModel(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(
         vehicle.status.value.let { v ->
-            ChargeRouteUiState(v.evBatteryPercent ?: v.fuelPercent ?: 0, v.rangeKm, offMode.tomorrowRoundTripKm(), charging.stationsOnRouteHome())
+            ChargeRouteUiState(v.evBatteryPercent ?: v.fuelPercent ?: 0, v.rangeKm, offMode.tomorrowRoundTripKm(), offMode.homeKm(), charging.stationsOnRouteHome())
         }
     )
     val uiState: StateFlow<ChargeRouteUiState> = _uiState.asStateFlow()
@@ -139,9 +140,9 @@ fun ChargeRouteContent(state: ChargeRouteUiState, onSelect: (Int) -> Unit, onAdd
                 PanelHeader("주차 중 · 퇴근 준비")
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Text("내일 출근하려면\n충전이 필요해요.", style = ds(54, 800, -0.03, 1.22))
-                    val left = state.rangeKm - state.roundTripKm
+                    val left = state.rangeKm - state.homeKm - state.roundTripKm
                     Text(
-                        "배터리 ${state.batteryPercent}% · ${state.rangeKm}km 남았어요. 내일 왕복 ${state.roundTripKm}km를 가면 " +
+                        "배터리 ${state.batteryPercent}% · ${state.rangeKm}km 남았어요. 집까지 ${state.homeKm}km, 내일 왕복 ${state.roundTripKm}km를 가면 " +
                             if (left > 0) "${left}km밖에 안 남아요." else "도착하기 어려워요.",
                         style = ds(28, lineHeight = 1.5, color = c.textSub),
                     )

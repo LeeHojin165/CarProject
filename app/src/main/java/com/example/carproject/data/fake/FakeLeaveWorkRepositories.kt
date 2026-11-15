@@ -1,5 +1,6 @@
 package com.example.carproject.data.fake
 
+import com.example.carproject.data.AppClock
 import android.util.Log
 import com.example.carproject.data.model.ChargingStation
 import com.example.carproject.data.model.OffModeChange
@@ -22,7 +23,10 @@ class FakeOffModeRepository : OffModeRepository {
 
     override fun tomorrow() = TomorrowPreview("주간 회의", LocalTime.of(10, 0), pendingTasks = 2)
 
-    override fun tomorrowRoundTripKm() = 48
+    // 출근길 18.4km 왕복 ≈ 37km, 퇴근길 18.6km ≈ 19km (DrivingAssistant.tripSummary와 맞춤)
+    override fun tomorrowRoundTripKm() = 37
+
+    override fun homeKm() = 19
 
     override suspend fun apply(): Boolean {
         Log.i("FakeSlack", "상태: 퇴근했어요, 방해 금지: 내일 09:00까지")
@@ -50,7 +54,7 @@ class FakeChargingRepository : ChargingRepository {
 class FakePickupRepository : PickupRepository {
     /** 지금이 포함된 30분 단위 시작 시각. 예: 14:47 → 14:30 */
     private fun windowStart(offsetMinutes: Long = 0): LocalTime {
-        val now = LocalTime.now()
+        val now = AppClock.now()
         return now.withMinute(if (now.minute < 30) 0 else 30).withSecond(0).withNano(0).plusMinutes(offsetMinutes)
     }
 
