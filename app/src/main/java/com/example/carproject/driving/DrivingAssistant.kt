@@ -201,7 +201,7 @@ class DrivingAssistant(
             if (_mode.value == CommuteMode.Morning && tripKind == TripKind.Commute && settings.proactive.value.lateAlert) {
                 // 출근길: 가짜 교통 정보로 잠시 뒤 지각 여부를 판단한다.
                 delay(LATE_CHECK_DELAY_MS)
-                showLateNotice(FAKE_DELAY_MINUTES)
+                showLateNotice(TRAFFIC_DELAY_MINUTES)
             } else if (reservation != null && pickupStage == PickupStage.None) {
                 // 퇴근길: 예약한 가게에 가까워지면 알린다(시연용으로 잠시 뒤).
                 delay(PICKUP_APPROACH_DELAY_MS)
@@ -211,10 +211,13 @@ class DrivingAssistant(
     }
 
     /** 시연용: 지각 알림을 바로 띄운다. */
-    fun showLateNotice(lateMinutes: Int = FAKE_DELAY_MINUTES) {
+    fun showLateNotice(trafficMinutes: Int = TRAFFIC_DELAY_MINUTES) {
         val next = calendar.todayEvents().sortedBy { it.time }.firstOrNull { it.time.isAfter(AppClock.now()) }
             ?: calendar.todayEvents().first()
-        val arrival = next.time.plusMinutes(lateMinutes.toLong())
+        // 08:12 출발 기준 원래 도착 예정(회사 34분 → 8:46)에 정체 시간을 더한다. 8:46 + 22분 = 9:08 → 9시 회의에 8분 늦음.
+        val place = destination ?: places.workplace()
+        val arrival = AppClock.MORNING.plusMinutes(places.estimatedMinutes(place).toLong() + trafficMinutes)
+        val lateMinutes = java.time.Duration.between(next.time, arrival).toMinutes().toInt().coerceAtLeast(1)
         val notice = DrivingPopup.LateNotice(
             lateMinutes = lateMinutes,
             channel = messages.teamChannel(),
@@ -295,7 +298,8 @@ class DrivingAssistant(
 
     private companion object {
         const val TAG = "DrivingAssistant"
-        const val FAKE_DELAY_MINUTES = 8
+        /** 가짜 교통 정보: 출근길 정체로 늘어난 시간(분). */
+        const val TRAFFIC_DELAY_MINUTES = 22
         const val LATE_CHECK_DELAY_MS = 6_000L
         const val NO_ANSWER_CLOSE_MS = 20_000L
         const val SENT_SHOW_MS = 4_000L

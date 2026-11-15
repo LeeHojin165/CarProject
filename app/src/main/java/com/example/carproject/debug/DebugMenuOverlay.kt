@@ -123,7 +123,7 @@ private fun DebugPanel(demo: DemoControls, onClose: () -> Unit) {
             Choice("저녁 6시", mode == CommuteMode.Evening) { demo.setMode(CommuteMode.Evening) }
         }
         Section("내비") {
-            Action("+8분 정체") { demo.showLateNotice(); onClose() }
+            Action("+22분 정체") { demo.showLateNotice(); onClose() }
             Action("가게 500m") { demo.showPickupApproach(500); onClose() }
             Action("가게 300m") { demo.showPickupApproach(300); onClose() }
             Action("픽업 도착") { demo.arriveAtPickup(); onClose() }
