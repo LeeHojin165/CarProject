@@ -51,7 +51,7 @@ class SignalHud(private val context: Context, private val demo: DemoControls) {
         val area = geometry.appArea
         val screenWidth = context.resources.displayMetrics.widthPixels
         // 오른쪽 기준: 화면 오른쪽 끝에서 앱 영역 오른쪽 끝까지 + 여백
-        overlay.show(gravity = Gravity.TOP or Gravity.RIGHT, x = screenWidth - area.right + 16, y = 8, touchable = false) { Hud(demo) }
+        overlay.show(gravity = Gravity.TOP or Gravity.RIGHT, x = screenWidth - area.right + 16, y = 6) { Hud(demo) }
     }
 
     fun hide() = overlay.hide()
@@ -69,28 +69,27 @@ private val HudAccent = Color(0xFF00AAD2)
 private fun Hud(demo: DemoControls) {
     val gear by demo.gear.collectAsStateWithLifecycle()
     val v by demo.vehicleStatus.collectAsStateWithLifecycle()
-    Column(
+    // 한 줄로 얇게: 앱 화면 맨 위 빈 띠(상태 칩 위)에만 걸치고 내용은 가리지 않는다.
+    Row(
         Modifier
-            .width(440.dp)
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(14.dp))
             .background(HudBg)
-            .padding(horizontal = 20.dp, vertical = 14.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+            .padding(horizontal = 10.dp, vertical = 5.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Box(Modifier.size(12.dp).clip(CircleShape).background(Color(0xFF3DDC84)))
-            Text("실시간 차량 신호", style = ds(22, 700, color = HudText))
-        }
-        SignalRow("기어 · GEAR_SELECTION", if (gear == Gear.P) "P 주차" else "${gear.name} 주행")
-        SignalRow("배터리 · EvBattery", "${v.evBatteryPercent ?: v.fuelPercent ?: 0}% · ${v.rangeKm}km")
-        SignalRow("창문 · Window", if (Seat.Passenger in v.openWindows) "조수석 열림" else "모두 닫힘")
-        SignalRow("바깥 기온", "${v.outsideTempC}°C")
+        Box(Modifier.padding(start = 4.dp).size(10.dp).clip(CircleShape).background(Color(0xFF3DDC84)))
+        Text("차량 신호", style = ds(18, 700, color = HudText), modifier = Modifier.padding(end = 4.dp))
+        Signal("기어", if (gear == Gear.P) "P 주차" else "${gear.name} 주행")
+        Signal("배터리", "${v.evBatteryPercent ?: v.fuelPercent ?: 0}%")
+        Signal("창문", if (Seat.Passenger in v.openWindows) "조수석 열림" else "닫힘")
+        Signal("바깥", "${v.outsideTempC}°C")
     }
 }
 
 /** 값이 바뀌면 2.5초 동안 배경을 강조한다. */
 @Composable
-private fun SignalRow(label: String, value: String) {
+private fun Signal(label: String, value: String) {
     var highlighted by remember { mutableStateOf(false) }
     var first by remember { mutableStateOf(true) }
     LaunchedEffect(value) {
@@ -99,16 +98,16 @@ private fun SignalRow(label: String, value: String) {
         delay(2_500)
         highlighted = false
     }
-    val bg by animateColorAsState(if (highlighted) HudAccent.copy(alpha = 0.35f) else HudLine, tween(250), label = "hud")
+    val bg by animateColorAsState(if (highlighted) HudAccent.copy(alpha = 0.45f) else HudLine, tween(250), label = "hud")
     Row(
         Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(10.dp))
             .background(bg)
-            .padding(horizontal = 14.dp, vertical = 8.dp),
+            .padding(horizontal = 10.dp, vertical = 3.dp),
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Text(label, style = ds(20, color = HudSub), modifier = Modifier.weight(1f))
-        Text(value, style = ds(24, 700, color = if (highlighted) HudText else HudText))
+        Text(label, style = ds(16, color = HudSub))
+        Text(value, style = ds(18, 700, color = HudText))
     }
 }
