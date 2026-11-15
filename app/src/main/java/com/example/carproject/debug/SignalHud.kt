@@ -51,7 +51,7 @@ class SignalHud(private val context: Context, private val demo: DemoControls) {
         val area = geometry.appArea
         val screenWidth = context.resources.displayMetrics.widthPixels
         // 오른쪽 기준: 화면 오른쪽 끝에서 앱 영역 오른쪽 끝까지 + 여백
-        overlay.show(gravity = Gravity.TOP or Gravity.RIGHT, x = screenWidth - area.right + 16, y = 8) { Hud(demo) }
+        overlay.show(gravity = Gravity.TOP or Gravity.RIGHT, x = screenWidth - area.right + 16, y = 8, touchable = false) { Hud(demo) }
     }
 
     fun hide() = overlay.hide()

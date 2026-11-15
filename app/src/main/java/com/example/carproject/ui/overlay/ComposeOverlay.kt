@@ -76,6 +76,7 @@ class ComposeOverlay(private val context: Context) {
         gravity: Int = Gravity.TOP or Gravity.CENTER_HORIZONTAL,
         x: Int? = null,
         y: Int = 0,
+        touchable: Boolean = true,
         content: @Composable () -> Unit,
     ): Boolean {
         if (view != null) return true
@@ -96,7 +97,8 @@ class ComposeOverlay(private val context: Context) {
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                (if (touchable) 0 else WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE),
             PixelFormat.TRANSLUCENT,
         ).apply {
             this.gravity = gravity
