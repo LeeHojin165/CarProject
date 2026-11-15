@@ -19,3 +19,4 @@ local.properties
 # 로컬 전용 문서·녹화 (올리지 않음)
 /docs/개발계획.md
 /demo-videos/
+/docs/영상자막.md
