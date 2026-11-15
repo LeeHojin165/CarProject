@@ -3,14 +3,13 @@ package com.example.carproject.debug
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ApplicationInfo
 import android.util.Log
 import com.example.carproject.CarApplication
 import com.example.carproject.data.model.Gear
 import com.example.carproject.ui.theme.CommuteMode
 
 /**
- * 시연·테스트용 adb 명령. 디버그 빌드에서만 동작한다.
+ * 시연·테스트용 adb 명령. BuildConfig.DEMO_TOOLS일 때만 동작한다.
  *   adb shell am broadcast -a com.example.carproject.DEMO -p com.example.carproject --es gear D
  *   ... --es gear P / --es popup late / --es popup close / --es battery low / --es window open / --es screen home
  *   ... --es popup pickup500 / --es temp cold|warm / --es data meeting|mention|reset
@@ -18,7 +17,7 @@ import com.example.carproject.ui.theme.CommuteMode
  */
 class DemoCommandReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE == 0) return
+        if (!com.example.carproject.BuildConfig.DEMO_TOOLS) return
         val app = context.applicationContext as CarApplication
         val demo = app.container.demoControls
         when (intent.getStringExtra("hud")) {

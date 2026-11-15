@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        // 시연 메뉴의 숨은 칸을 앱 영역 구석에 놓는다(디버그 빌드에서만 있음).
+        // 시연 메뉴의 숨은 칸을 앱 영역 구석에 놓는다(DEMO_TOOLS일 때만 있음).
         (application as CarApplication).debugMenu?.ensureShown()
     }
 }
