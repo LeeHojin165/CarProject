@@ -229,9 +229,10 @@ class HomeViewModel(
     private fun resolvePlace(text: String, recent: List<RecentPlace>): Place {
         val bare = { s: String -> s.replace("[", "").replace("]", "").replace(" ", "") }
         recent.firstOrNull { bare(text).contains(bare(it.place.name)) }?.let { return it.place }
-        val name = text.trim()
-            .removeSuffix("가줘").removeSuffix("가 줘").removeSuffix("안내해줘").trim()
-            .removeSuffix("으로").removeSuffix("로").trim()
+        // 말끝이 잘리거나 달라도("으로 가", "로 가자", "가주세요", "안내해 줘") 장소 이름만 남긴다.
+        val name = text.trim().trimEnd('.', '!', '?')
+            .replace(Regex("\\s*(가\\s*줘|가\\s*주세요|가자|가|안내해\\s*줘|안내해\\s*주세요|안내해)$"), "").trim()
+            .replace(Regex("(으로|로)$"), "").trim()
         return Place(name = name.ifBlank { text }, address = "")
     }
 
