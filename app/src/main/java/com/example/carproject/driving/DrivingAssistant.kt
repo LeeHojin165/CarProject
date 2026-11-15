@@ -1,5 +1,6 @@
 package com.example.carproject.driving
 
+import com.example.carproject.data.AppClock
 import android.util.Log
 import com.example.carproject.data.model.CalendarEvent
 import com.example.carproject.data.model.ChargingStation
@@ -69,7 +70,11 @@ class DrivingAssistant(
     fun setMode(mode: CommuteMode) {
         Log.i(TAG, "모드: $mode")
         // 출근↔퇴근이 바뀌면 이전 길의 목적지는 더 이상 맞지 않는다(퇴근인데 "회사 도착"이 뜨지 않게).
-        if (_mode.value != mode) destination = null
+        if (_mode.value != mode) {
+            destination = null
+            // 시연 시각도 함께 바꾼다: 출근 08:12, 퇴근 18:00.
+            AppClock.setTo(if (mode == CommuteMode.Evening) AppClock.EVENING else AppClock.MORNING)
+        }
         _mode.value = mode
     }
 
@@ -203,7 +208,7 @@ class DrivingAssistant(
 
     /** 시연용: 지각 알림을 바로 띄운다. */
     fun showLateNotice(lateMinutes: Int = FAKE_DELAY_MINUTES) {
-        val next = calendar.todayEvents().sortedBy { it.time }.firstOrNull { it.time.isAfter(LocalTime.now()) }
+        val next = calendar.todayEvents().sortedBy { it.time }.firstOrNull { it.time.isAfter(AppClock.now()) }
             ?: calendar.todayEvents().first()
         val arrival = next.time.plusMinutes(lateMinutes.toLong())
         val notice = DrivingPopup.LateNotice(
@@ -227,14 +232,14 @@ class DrivingAssistant(
     }
 
     /** 15: 예약한 가게 300m 앞. 예약이 없으면(시연 메뉴) 첫 가게로 가짜 예약을 만든다. */
-    fun showPickupApproach(fallback: Reservation? = null) {
+    fun showPickupApproach(fallback: Reservation? = null, meters: Int = 300) {
         val r = reservation ?: fallback ?: return
-        val popup = DrivingPopup.PickupApproach(r, "300m")
+        val popup = DrivingPopup.PickupApproach(r, "${meters}m")
         _popup.value = popup
         popupJob?.cancel()
         popupJob = scope.launch {
             val kind = r.store.place.name.replace("[", "").replace("]", "")
-            voice.speak("300미터 앞 ${r.store.side}, 예약한 ${kind}이에요. 픽업 번호는 ${r.pickupNumber.toList().joinToString(" ")}이에요.")
+            voice.speak("${meters}미터 앞 ${r.store.side}, 예약한 ${kind}이에요. 픽업 번호는 ${r.pickupNumber.toList().joinToString(" ")}이에요.")
             delay(PICKUP_POPUP_SHOW_MS)
             if (_popup.value == popup) _popup.value = DrivingPopup.None
         }

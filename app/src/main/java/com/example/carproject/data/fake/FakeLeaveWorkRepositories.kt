@@ -1,5 +1,6 @@
 package com.example.carproject.data.fake
 
+import com.example.carproject.data.AppClock
 import android.util.Log
 import com.example.carproject.data.model.ChargingStation
 import com.example.carproject.data.model.OffModeChange
@@ -50,7 +51,7 @@ class FakeChargingRepository : ChargingRepository {
 class FakePickupRepository : PickupRepository {
     /** 지금이 포함된 30분 단위 시작 시각. 예: 14:47 → 14:30 */
     private fun windowStart(offsetMinutes: Long = 0): LocalTime {
-        val now = LocalTime.now()
+        val now = AppClock.now()
         return now.withMinute(if (now.minute < 30) 0 else 30).withSecond(0).withNano(0).plusMinutes(offsetMinutes)
     }
 

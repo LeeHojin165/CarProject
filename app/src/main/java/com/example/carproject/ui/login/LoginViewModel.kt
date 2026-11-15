@@ -15,6 +15,8 @@ data class LoginUiState(
     val profileName: String = "[프로필 이름]",
     val manualCode: String = "",
     val remainingText: String = "",
+    val doneSteps: Int = 0,
+    val isLoggedIn: Boolean = false,
 )
 
 class LoginViewModel(auth: AuthRepository) : ViewModel() {
@@ -24,6 +26,8 @@ class LoginViewModel(auth: AuthRepository) : ViewModel() {
                 profileName = s.profileName,
                 manualCode = s.manualCode,
                 remainingText = "%d:%02d 남음".format(s.remainingSeconds / 60, s.remainingSeconds % 60),
+                doneSteps = s.doneSteps,
+                isLoggedIn = s.isLoggedIn,
             )
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LoginUiState())

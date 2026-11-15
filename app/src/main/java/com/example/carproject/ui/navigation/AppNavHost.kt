@@ -94,6 +94,10 @@ fun AppNavHost(container: AppContainer) {
                 ScreenRequest.PickupWait -> nav.navigate(Routes.PICKUP_WAIT) { launchSingleTop = true }
                 ScreenRequest.PickupDepart -> nav.navigate(Routes.PICKUP_DEPART) { launchSingleTop = true }
                 ScreenRequest.TripLog -> nav.navigate(Routes.TRIP_LOG) { launchSingleTop = true }
+                ScreenRequest.Login -> nav.navigate(Routes.LOGIN) {
+                    popUpTo(nav.graph.id) { inclusive = true }
+                    launchSingleTop = true
+                }
                 ScreenRequest.Home -> nav.navigate(Routes.HOME) {
                     popUpTo(nav.graph.id) { inclusive = true }
                     launchSingleTop = true

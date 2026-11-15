@@ -36,7 +36,7 @@ data class VehicleStatus(
     /** 평균 연비(km/L). 유류비 계산에 쓴다. */
     val avgFuelEconomy: Double = 12.0,
     /** 바깥 온도(도). 가짜 값. */
-    val outsideTempC: Int = 3,
+    val outsideTempC: Int = 12,
     /** 내렸을 때도 공조를 켜 둔 상태면 목표 온도. */
     val keepClimateTempC: Int? = null,
 )

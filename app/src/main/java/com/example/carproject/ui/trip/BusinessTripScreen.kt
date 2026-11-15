@@ -1,5 +1,6 @@
 package com.example.carproject.ui.trip
 
+import com.example.carproject.data.AppClock
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -105,7 +106,7 @@ class BusinessTripViewModel(
     init {
         val event = calendar.todayEvents().firstOrNull { it.place == place }
         val minutes = places.estimatedMinutes(place)
-        val arrival = LocalTime.now().plusMinutes(minutes.toLong())
+        val arrival = AppClock.now().plusMinutes(minutes.toLong())
         val slack = event?.let {
             val gap = Duration.between(arrival, it.time).toMinutes()
             val what = it.title.substringAfterLast(' ')

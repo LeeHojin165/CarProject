@@ -13,6 +13,7 @@ import com.example.carproject.ui.theme.CommuteMode
  * 시연·테스트용 adb 명령. 디버그 빌드에서만 동작한다.
  *   adb shell am broadcast -a com.example.carproject.DEMO -p com.example.carproject --es gear D
  *   ... --es gear P / --es popup late / --es popup close / --es battery low / --es window open / --es screen home
+ *   ... --es popup pickup500 / --es temp cold|warm / --es data meeting|mention|reset
  *   ... --es briefing "판교 카페"   (좌표 없는 목적지로 브리핑 열기: 내비 검색 경로 확인용)
  */
 class DemoCommandReceiver : BroadcastReceiver() {
@@ -28,10 +29,20 @@ class DemoCommandReceiver : BroadcastReceiver() {
             "late" -> demo.showLateNotice()
             "close" -> demo.closePopups()
             "pickup" -> demo.showPickupApproach()
+            "pickup500" -> demo.showPickupApproach(500)
             "arrive" -> demo.arriveAtPickup()
         }
         intent.getStringExtra("battery")?.let { demo.setBatteryLow(it == "low") }
         intent.getStringExtra("window")?.let { demo.setPassengerWindowOpen(it == "open") }
+        if (intent.getStringExtra("login") == "phone") demo.phoneLogin()
+        intent.getStringExtra("mic")?.let { demo.setScriptOnlyMic(it == "script") }
+        intent.getStringExtra("say")?.let(demo::sayNext)
+        intent.getStringExtra("temp")?.let { demo.setOutsideCold(it == "cold") }
+        when (intent.getStringExtra("data")) {
+            "meeting" -> demo.addClientMeeting()
+            "mention" -> demo.addMention()
+            "reset" -> demo.resetFirstRun()
+        }
         intent.getStringExtra("washer")?.let { demo.setWasherLow(it == "low") }
         if (intent.getStringExtra("screen") == "home") demo.goHome()
         intent.getStringExtra("briefing")?.let(demo::openBriefing)

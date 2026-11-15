@@ -1,5 +1,6 @@
 package com.example.carproject.ui.parking
 
+import com.example.carproject.data.AppClock
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.createSavedStateHandle
@@ -43,7 +44,7 @@ class ParkAskViewModel(
     private val voice: VoiceRepository,
 ) : ViewModel() {
     private val place = PlaceArgs.read(savedState)
-    private val parkedAt = LocalTime.now().withSecond(0).withNano(0)
+    private val parkedAt = AppClock.now().withSecond(0).withNano(0)
 
     private val _uiState = MutableStateFlow(
         ParkAskUiState(

@@ -104,7 +104,7 @@ private fun DebugPanel(demo: DemoControls, onClose: () -> Unit) {
             .clip(RoundedCornerShape(40.dp))
             .background(c.card)
             .padding(horizontal = 44.dp, vertical = 36.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("시연 메뉴", style = ds(40, 800), modifier = Modifier.weight(1f))
@@ -117,33 +117,35 @@ private fun DebugPanel(demo: DemoControls, onClose: () -> Unit) {
                 contentAlignment = Alignment.Center,
             ) { LineIcon(AppIcon.Close, 36.dp, color = c.text, strokeWidth = 2.4f) }
         }
-        Section("모드") {
-            Choice("출근 · 라이트", mode == CommuteMode.Morning) { demo.setMode(CommuteMode.Morning) }
-            Choice("퇴근 · 다크", mode == CommuteMode.Evening) { demo.setMode(CommuteMode.Evening) }
+        // 촬영 시나리오의 묶음 순서(시간대 · 내비 · 가짜 데이터 · 기타 · 차량 신호)를 따른다.
+        Section("시간대") {
+            Choice("아침 8시", mode == CommuteMode.Morning) { demo.setMode(CommuteMode.Morning) }
+            Choice("저녁 6시", mode == CommuteMode.Evening) { demo.setMode(CommuteMode.Evening) }
         }
-        Section("기어") {
-            // P로 바꾸면 주차 화면으로 넘어가니 메뉴를 닫는다(촬영 화면에 남지 않게).
-            Choice("P 주차", gear == Gear.P) { demo.setGear(Gear.P); onClose() }
-            Choice("D 주행", gear == Gear.D) { demo.setGear(Gear.D) }
-        }
-        Section("배터리") {
-            Choice("62% 보통", !batteryLow) { demo.setBatteryLow(false) }
-            Choice("14% 부족", batteryLow) { demo.setBatteryLow(true) }
-        }
-        Section("조수석 창문") {
-            Choice("닫힘", !windowOpen) { demo.setPassengerWindowOpen(false) }
-            Choice("열림", windowOpen) { demo.setPassengerWindowOpen(true) }
-        }
-        Section("워셔액") {
-            Choice("충분", !v.washerFluidLow) { demo.setWasherLow(false) }
-            Choice("부족", v.washerFluidLow) { demo.setWasherLow(true) }
-        }
-        Section("장면") {
-            Action("지각 알림") { demo.showLateNotice(); onClose() }
-            Action("픽업 알림") { demo.showPickupApproach(); onClose() }
+        Section("내비") {
+            Action("+8분 정체") { demo.showLateNotice(); onClose() }
+            Action("가게 500m") { demo.showPickupApproach(500); onClose() }
+            Action("가게 300m") { demo.showPickupApproach(300); onClose() }
             Action("픽업 도착") { demo.arriveAtPickup(); onClose() }
+        }
+        Section("가짜 데이터") {
+            Action("일정 넣기") { demo.addClientMeeting(); onClose() }
+            Action("Slack 멘션") { demo.addMention(); onClose() }
+            Choice("바깥 3도", v.outsideTempC <= 3) { demo.setOutsideCold(v.outsideTempC > 3) }
+        }
+        Section("기타") {
+            Action("초기화") { demo.resetFirstRun(); onClose() }
+            Action("폰 QR") { demo.phoneLogin(); onClose() }
             Action("팝업 닫기") { demo.closePopups() }
             Action("처음 화면") { demo.goHome(); onClose() }
+            Choice("워셔 부족", v.washerFluidLow) { demo.setWasherLow(!v.washerFluidLow) }
+        }
+        Section("차량 신호") {
+            // P로 바꾸면 주차 화면으로 넘어가니 메뉴를 닫는다(촬영 화면에 남지 않게).
+            Choice("P", gear == Gear.P) { demo.setGear(Gear.P); onClose() }
+            Choice("D", gear == Gear.D) { demo.setGear(Gear.D) }
+            Choice("배터리 14%", batteryLow) { demo.setBatteryLow(!batteryLow) }
+            Choice("창문 열림", windowOpen) { demo.setPassengerWindowOpen(!windowOpen) }
         }
     }
 }
