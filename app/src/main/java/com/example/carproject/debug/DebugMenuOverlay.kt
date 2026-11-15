@@ -43,7 +43,7 @@ import com.example.carproject.ui.theme.ds
 
 /**
  * 시연용 숨은 디버그 메뉴. 앱 영역 왼쪽 위 구석의 투명한 칸을 길게 누르면 패널이 열린다.
- * 오버레이라서 우리 앱 화면에서도, 내비가 앞에 있을 때도 열 수 있다. 디버그 빌드에서만 켠다.
+ * 오버레이라서 우리 앱 화면에서도, 내비가 앞에 있을 때도 열 수 있다. BuildConfig.DEMO_TOOLS일 때만 켠다.
  */
 class DebugMenuOverlay(
     context: Context,

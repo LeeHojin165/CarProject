@@ -38,7 +38,7 @@ import kotlinx.coroutines.delay
 /**
  * 시연 영상용 작은 "차량 신호" 창. 앱 영역 오른쪽 위에 떠서, 앱이 실제로 받는 신호
  * (기어 GEAR_SELECTION, 배터리, 창문, 바깥 기온)를 보여 주고 값이 바뀌면 그 줄을 잠깐 강조한다.
- * 오버레이라 내비 위에서도 보인다. 디버그 빌드에서만, 시연 메뉴나 adb(--es hud on)로 켠다.
+ * 오버레이라 내비 위에서도 보인다. DEMO_TOOLS일 때만, 시연 메뉴나 adb(--es hud on)로 켠다.
  */
 class SignalHud(private val context: Context, private val demo: DemoControls) {
     private val overlay = ComposeOverlay(context)
