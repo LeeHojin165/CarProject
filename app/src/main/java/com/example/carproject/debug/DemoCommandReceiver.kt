@@ -19,7 +19,12 @@ import com.example.carproject.ui.theme.CommuteMode
 class DemoCommandReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE == 0) return
-        val demo = (context.applicationContext as CarApplication).container.demoControls
+        val app = context.applicationContext as CarApplication
+        val demo = app.container.demoControls
+        when (intent.getStringExtra("hud")) {
+            "on" -> app.signalHud?.show()
+            "off" -> app.signalHud?.hide()
+        }
         intent.getStringExtra("gear")?.let { value ->
             runCatching { Gear.valueOf(value.uppercase()) }
                 .onSuccess(demo::setGear)

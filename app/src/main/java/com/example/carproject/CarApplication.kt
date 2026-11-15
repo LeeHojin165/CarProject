@@ -13,6 +13,10 @@ class CarApplication : Application() {
     var debugMenu: DebugMenuOverlay? = null
         private set
 
+    /** 시연용 "차량 신호" 창. 디버그 빌드에서만 있다. */
+    var signalHud: com.example.carproject.debug.SignalHud? = null
+        private set
+
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
@@ -25,7 +29,8 @@ class CarApplication : Application() {
         container.parkingWatcher.start()
         // 시연용 숨은 메뉴는 디버그 빌드에서만. 위치는 앱 화면이 나올 때 잡는다(MainActivity).
         if (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0) {
-            debugMenu = DebugMenuOverlay(this, container.demoControls)
+            signalHud = com.example.carproject.debug.SignalHud(this, container.demoControls)
+            debugMenu = DebugMenuOverlay(this, container.demoControls) { signalHud?.toggle() }
         }
     }
 }

@@ -45,7 +45,11 @@ import com.example.carproject.ui.theme.ds
  * 시연용 숨은 디버그 메뉴. 앱 영역 왼쪽 위 구석의 투명한 칸을 길게 누르면 패널이 열린다.
  * 오버레이라서 우리 앱 화면에서도, 내비가 앞에 있을 때도 열 수 있다. 디버그 빌드에서만 켠다.
  */
-class DebugMenuOverlay(context: Context, private val demo: DemoControls) {
+class DebugMenuOverlay(
+    context: Context,
+    private val demo: DemoControls,
+    private val onToggleSignals: () -> Unit = {},
+) {
     private val hotspot = ComposeOverlay(context)
     private val panel = ComposeOverlay(context)
     private val geometry = OverlayGeometry(context)
@@ -78,7 +82,7 @@ class DebugMenuOverlay(context: Context, private val demo: DemoControls) {
 
     private fun togglePanel() {
         if (panel.isShown) panel.hide() else panel.show(y = 24) {
-            CarProjectTheme(CommuteMode.Evening) { DebugPanel(demo, onClose = panel::hide) }
+            CarProjectTheme(CommuteMode.Evening) { DebugPanel(demo, onClose = panel::hide, onToggleSignals = onToggleSignals) }
         }
     }
 
@@ -88,7 +92,7 @@ class DebugMenuOverlay(context: Context, private val demo: DemoControls) {
 }
 
 @Composable
-private fun DebugPanel(demo: DemoControls, onClose: () -> Unit) {
+private fun DebugPanel(demo: DemoControls, onClose: () -> Unit, onToggleSignals: () -> Unit = {}) {
     val c = appColors
     val gear by demo.gear.collectAsStateWithLifecycle()
     val mode by demo.mode.collectAsStateWithLifecycle()
@@ -138,7 +142,7 @@ private fun DebugPanel(demo: DemoControls, onClose: () -> Unit) {
             Action("폰 QR") { demo.phoneLogin(); onClose() }
             Action("팝업 닫기") { demo.closePopups() }
             Action("처음 화면") { demo.goHome(); onClose() }
-            Choice("워셔 부족", v.washerFluidLow) { demo.setWasherLow(!v.washerFluidLow) }
+            Action("신호 창") { onToggleSignals(); onClose() }
         }
         Section("차량 신호") {
             // P로 바꾸면 주차 화면으로 넘어가니 메뉴를 닫는다(촬영 화면에 남지 않게).
