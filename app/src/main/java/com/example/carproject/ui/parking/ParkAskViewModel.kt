@@ -133,7 +133,10 @@ class ParkAskViewModel(
     /** "지하 3층 기둥 C12", "B3 씨 12" 같은 말에서 층과 기둥 번호를 뽑는다. */
     private fun parse(text: String): ParkingSpot {
         val t = text.replace(" ", "")
+        // "지하 삼층"처럼 한글 숫자로 인식돼도 층을 뽑는다.
+        val korean = mapOf("일" to "1", "이" to "2", "삼" to "3", "사" to "4", "오" to "5", "육" to "6", "칠" to "7", "팔" to "8", "구" to "9")
         val floor = Regex("지하(\\d+)").find(t)?.let { "B${it.groupValues[1]}" }
+            ?: Regex("지하([일이삼사오육칠팔구])층").find(t)?.let { "B${korean[it.groupValues[1]]}" }
             ?: Regex("[Bb비](\\d+)").find(t)?.let { "B${it.groupValues[1]}" }
             ?: if ("지상" in t) "지상" else null
         val letters = mapOf("에이" to "A", "비" to "B", "씨" to "C", "시" to "C", "디" to "D", "이" to "E", "에프" to "F")
